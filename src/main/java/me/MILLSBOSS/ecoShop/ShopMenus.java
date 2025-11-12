@@ -19,7 +19,6 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public final class ShopMenus {
 
@@ -27,13 +26,23 @@ public final class ShopMenus {
     private static final int MY_LISTINGS_SLOT = 50;
     private static final int PLAYER_HEAD_SLOT = 53;
 
+    // Confirm GUI layout constants
+    private static final int CONFIRM_DISPLAY_SLOT = 13;
+    private static final int BTN_MINUS_32 = 19;
+    private static final int BTN_MINUS_1 = 21;
+    private static final int BTN_PLUS_1 = 23;
+    private static final int BTN_PLUS_32 = 25;
+    private static final int BTN_BUY_ALL = 40;
+    private static final int BTN_CONFIRM = 38;
+    private static final int BTN_CANCEL = 42;
+
     private ShopMenus() {}
 
     public static void openMain(Player p) {
-        Inventory inv = Bukkit.createInventory(p, 54, ChatColor.GREEN + "EcoShop");
+        Inventory inv = Bukkit.createInventory(p, 54, ChatColor.GREEN + "EcoShopPro");
         tagInventory(inv, Constants.GUI_MAIN, null, -1);
         // Fill with categories
-        int[] catSlots = new int[]{10,11,12,13,14,15,16,19,20};
+        int[] catSlots = new int[]{10,11,12,13,14,15,16,19,20,21,22};
         Category[] cats = new Category[]{
                 Category.BUILDING_BLOCKS,
                 Category.TOOLS,
@@ -43,6 +52,8 @@ public final class ShopMenus {
                 Category.ORES,
                 Category.PLANTS,
                 Category.REDSTONE,
+                Category.SPAWNERS,
+                Category.ENCHANTMENT_BOOKS,
                 Category.MISC
         };
         for (int i = 0; i < cats.length && i < catSlots.length; i++) {
@@ -62,7 +73,7 @@ public final class ShopMenus {
         Inventory inv = Bukkit.createInventory(p, 54, ChatColor.YELLOW + category.getDisplay() + ChatColor.GRAY + " - Page " + (page+1));
         tagInventory(inv, Constants.GUI_CATEGORY, category, page);
         // Fetch listings and paginate
-        ListingsManager lm = EcoShop.getInstance().getListingsManager();
+        ListingsManager lm = EcoShopPro.getInstance().getListingsManager();
         List<Listing> list = lm.getByCategory(category);
         int perPage = 45; // top 5 rows
         int start = page * perPage;
@@ -82,7 +93,7 @@ public final class ShopMenus {
     public static void openMyListings(Player p, int page) {
         Inventory inv = Bukkit.createInventory(p, 54, ChatColor.AQUA + "My Listings - Page " + (page+1));
         tagInventory(inv, Constants.GUI_MY_LISTINGS, null, page);
-        ListingsManager lm = EcoShop.getInstance().getListingsManager();
+        ListingsManager lm = EcoShopPro.getInstance().getListingsManager();
         List<Listing> mine = lm.getBySeller(p.getUniqueId());
         int perPage = 45;
         int start = page * perPage;
@@ -192,9 +203,9 @@ public final class ShopMenus {
         meta.setDisplayName(ChatColor.GOLD + p.getName());
         double bal = 0.0;
         double sales = 0.0;
-        Economy eco = EcoShop.getInstance().getEconomy();
+        Economy eco = EcoShopPro.getInstance().getEconomy();
         if (eco != null) bal = eco.getBalance(p);
-        sales = EcoShop.getInstance().getListingsManager().getSalesTotal(p.getUniqueId());
+        sales = EcoShopPro.getInstance().getListingsManager().getSalesTotal(p.getUniqueId());
         meta.setLore(Arrays.asList(
                 ChatColor.YELLOW + String.format("Balance: %.2f", bal),
                 ChatColor.YELLOW + String.format("Total Sales: %.2f", sales)
@@ -221,5 +232,83 @@ public final class ShopMenus {
         String id = item.getItemMeta().getPersistentDataContainer().get(Constants.KEY_LISTING_ID, PersistentDataType.STRING);
         if (id == null) return null;
         try { return UUID.fromString(id); } catch (Exception e) { return null; }
+    }
+
+    // ==== Confirm GUI ====
+    public static void openConfirm(Player p, Listing l, Category category, int page, int quantity) {
+        if (quantity < 1) quantity = 1;
+        int maxQty = Math.max(1, l.getItem().getAmount());
+        if (quantity > maxQty) quantity = maxQty;
+        Inventory inv = Bukkit.createInventory(p, 45, ChatColor.GOLD + "Confirm Purchase");
+        // Display the item with selected quantity
+        ItemStack display = l.getItem().clone();
+        display.setAmount(Math.max(1, Math.min(quantity, display.getMaxStackSize())));
+        ItemMeta dMeta = display.getItemMeta();
+        List<String> lore = dMeta.hasLore() ? new ArrayList<>(Objects.requireNonNull(dMeta.getLore())) : new ArrayList<>();
+        double unitPrice = l.getPrice() / Math.max(1, l.getItem().getAmount());
+        double total = unitPrice * quantity;
+        lore.add(ChatColor.GRAY + "——");
+        lore.add(ChatColor.YELLOW + String.format("Unit: %.2f", unitPrice));
+        lore.add(ChatColor.YELLOW + String.format("Quantity: %d", quantity));
+        lore.add(ChatColor.YELLOW + String.format("Total: %.2f", total));
+        dMeta.setLore(lore);
+        PersistentDataContainer pdc = dMeta.getPersistentDataContainer();
+        pdc.set(Constants.KEY_TYPE, PersistentDataType.STRING, Constants.GUI_CONFIRM);
+        pdc.set(Constants.KEY_LISTING_ID, PersistentDataType.STRING, l.getId().toString());
+        pdc.set(Constants.KEY_CATEGORY, PersistentDataType.STRING, category != null ? category.name() : "");
+        pdc.set(Constants.KEY_PAGE, PersistentDataType.INTEGER, page);
+        pdc.set(Constants.KEY_QUANTITY, PersistentDataType.INTEGER, quantity);
+        display.setItemMeta(dMeta);
+        inv.setItem(CONFIRM_DISPLAY_SLOT, display);
+
+        // Controls
+        inv.setItem(BTN_MINUS_32, controlButton(Material.RED_STAINED_GLASS_PANE, ChatColor.RED + "-32", l, category, page, quantity));
+        inv.setItem(BTN_MINUS_1, controlButton(Material.RED_STAINED_GLASS_PANE, ChatColor.RED + "-1", l, category, page, quantity));
+        inv.setItem(BTN_PLUS_1, controlButton(Material.LIME_STAINED_GLASS_PANE, ChatColor.GREEN + "+1", l, category, page, quantity));
+        inv.setItem(BTN_PLUS_32, controlButton(Material.LIME_STAINED_GLASS_PANE, ChatColor.GREEN + "+32", l, category, page, quantity));
+        inv.setItem(BTN_CONFIRM, actionButton(Material.EMERALD_BLOCK, ChatColor.GREEN + "Confirm", l, category, page, quantity));
+        inv.setItem(BTN_CANCEL, actionButton(Material.BARRIER, ChatColor.RED + "Cancel", l, category, page, quantity));
+        inv.setItem(BTN_BUY_ALL, actionButton(Material.GOLD_BLOCK, ChatColor.GOLD + "Buy All", l, category, page, quantity));
+
+        p.openInventory(inv);
+    }
+
+    private static ItemStack controlButton(Material mat, String name, Listing l, Category category, int page, int quantity) {
+        ItemStack it = new ItemStack(mat);
+        ItemMeta meta = it.getItemMeta();
+        meta.setDisplayName(name);
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        pdc.set(Constants.KEY_TYPE, PersistentDataType.STRING, Constants.GUI_CONFIRM);
+        pdc.set(Constants.KEY_LISTING_ID, PersistentDataType.STRING, l.getId().toString());
+        pdc.set(Constants.KEY_CATEGORY, PersistentDataType.STRING, category != null ? category.name() : "");
+        pdc.set(Constants.KEY_PAGE, PersistentDataType.INTEGER, page);
+        pdc.set(Constants.KEY_QUANTITY, PersistentDataType.INTEGER, quantity);
+        it.setItemMeta(meta);
+        return it;
+    }
+
+    private static ItemStack actionButton(Material mat, String name, Listing l, Category category, int page, int quantity) {
+        ItemStack it = controlButton(mat, name, l, category, page, quantity);
+        ItemMeta meta = it.getItemMeta();
+        if (meta != null) {
+            String plain = meta.hasDisplayName() ? ChatColor.stripColor(meta.getDisplayName()) : "";
+            double unitPrice = l.getPrice() / Math.max(1, l.getItem().getAmount());
+            int qtyForPrice;
+            if (plain.equalsIgnoreCase("Confirm")) {
+                qtyForPrice = Math.max(1, quantity);
+            } else if (plain.equalsIgnoreCase("Buy All")) {
+                qtyForPrice = Math.max(1, l.getItem().getAmount());
+            } else {
+                qtyForPrice = -1; // no lore for other buttons
+            }
+            if (qtyForPrice > 0) {
+                double total = unitPrice * qtyForPrice;
+                List<String> lore = new ArrayList<>();
+                lore.add(ChatColor.YELLOW + String.format("Price: %.2f", total));
+                meta.setLore(lore);
+                it.setItemMeta(meta);
+            }
+        }
+        return it;
     }
 }

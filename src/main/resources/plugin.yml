@@ -1,15 +1,15 @@
-name: EcoShop
+name: EcoShopPro
 version: '1.0'
-main: me.MILLSBOSS.ecoShop.EcoShop
+main: me.MILLSBOSS.ecoShop.EcoShopPro
 api-version: '1.21'
 softdepend:
   - Vault
 commands:
   shop:
-    description: Open the EcoShop
+    description: Open the EcoShopPro
     usage: /shop
-    permission: ecoshop.use
+    permission: EcoShopPro.use
 permissions:
-  ecoshop.use:
+  EcoShopPro.use:
     description: Allows using /shop
     default: true

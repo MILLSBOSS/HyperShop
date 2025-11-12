@@ -1,5 +1,6 @@
 package me.MILLSBOSS.ecoShop;
 
+import me.MILLSBOSS.ecoShop.pricing.Pricing;
 import me.MILLSBOSS.ecoShop.storage.ListingsManager;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
@@ -9,13 +10,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public final class EcoShop extends JavaPlugin {
+public final class EcoShopPro extends JavaPlugin {
 
-    private static EcoShop instance;
+    private static EcoShopPro instance;
     private Economy economy;
     private ListingsManager listingsManager;
 
-    public static EcoShop getInstance() { return instance; }
+    public static EcoShopPro getInstance() { return instance; }
 
     public Economy getEconomy() { return economy; }
     public ListingsManager getListingsManager() { return listingsManager; }
@@ -23,6 +24,9 @@ public final class EcoShop extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
+        // Config and pricing
+        saveDefaultConfig();
+        Pricing.load(this);
         // Storage
         this.listingsManager = new ListingsManager(getDataFolder());
         // Vault
@@ -31,12 +35,12 @@ public final class EcoShop extends JavaPlugin {
         }
         // Register listeners
         Bukkit.getPluginManager().registerEvents(new ShopListener(this), this);
-        getLogger().info("EcoShop enabled.");
+        getLogger().info("EcoShopPro enabled.");
     }
 
     @Override
     public void onDisable() {
-        getLogger().info("EcoShop disabled.");
+        getLogger().info("EcoShopPro disabled.");
     }
 
     private boolean setupEconomy() {
@@ -59,7 +63,7 @@ public final class EcoShop extends JavaPlugin {
                 return true;
             }
             Player p = (Player) sender;
-            if (!p.hasPermission("ecoshop.use")) {
+            if (!p.hasPermission("EcoShopPro.use")) {
                 p.sendMessage("You don't have permission.");
                 return true;
             }

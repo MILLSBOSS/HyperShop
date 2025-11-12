@@ -11,6 +11,8 @@ public enum Category {
     ORES("Ores", Material.IRON_INGOT),
     PLANTS("Plants", Material.OAK_SAPLING),
     REDSTONE("Redstone", Material.REDSTONE),
+    SPAWNERS("Spawners", Material.SPAWNER),
+    ENCHANTMENT_BOOKS("Enchantment Books", Material.ENCHANTED_BOOK),
     MISC("Miscellaneous", Material.CHEST);
 
     private final String display;
@@ -30,6 +32,9 @@ public enum Category {
     }
 
     public static Category categorize(Material mat) {
+        // Direct mappings for special categories
+        if (mat == Material.SPAWNER) return SPAWNERS;
+        if (mat == Material.ENCHANTED_BOOK) return ENCHANTMENT_BOOKS;
         // Simple heuristic to categorize based on material name
         String n = mat.name();
         if (n.contains("SWORD") || n.contains("BOW") || n.contains("CROSSBOW") || n.contains("TRIDENT")) return WEAPONS;

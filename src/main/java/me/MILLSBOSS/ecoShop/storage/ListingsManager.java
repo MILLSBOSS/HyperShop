@@ -58,6 +58,13 @@ public class ListingsManager {
         return removed;
     }
 
+    public synchronized void updateListing(Listing listing) {
+        if (listing == null) return;
+        // Ensure the map contains the listing and then just save
+        listings.put(listing.getId(), listing);
+        saveAsync();
+    }
+
     public synchronized void addToSales(UUID seller, double amount) {
         salesTotals.merge(seller, amount, Double::sum);
         saveSalesAsync();
@@ -106,7 +113,7 @@ public class ListingsManager {
     }
 
     private void saveAsync() {
-        Bukkit.getScheduler().runTaskAsynchronously(Bukkit.getPluginManager().getPlugin("EcoShop"), this::save);
+        Bukkit.getScheduler().runTaskAsynchronously(Bukkit.getPluginManager().getPlugin("EcoShopPro"), this::save);
     }
 
     private void save() {
@@ -130,7 +137,7 @@ public class ListingsManager {
     }
 
     private void saveSalesAsync() {
-        Bukkit.getScheduler().runTaskAsynchronously(Bukkit.getPluginManager().getPlugin("EcoShop"), this::saveSales);
+        Bukkit.getScheduler().runTaskAsynchronously(Bukkit.getPluginManager().getPlugin("EcoShopPro"), this::saveSales);
     }
 
     private void saveSales() {

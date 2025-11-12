@@ -4,6 +4,7 @@ import me.MILLSBOSS.ecoShop.model.Category;
 import me.MILLSBOSS.ecoShop.model.Listing;
 import me.MILLSBOSS.ecoShop.storage.ListingsManager;
 import me.MILLSBOSS.ecoShop.gui.Constants;
+import me.MILLSBOSS.ecoShop.pricing.Pricing;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -15,23 +16,24 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
 
 public class ShopListener implements Listener {
 
-    private final EcoShop plugin;
+    private final EcoShopPro plugin;
 
     // pending sell: player -> item to list
     private final Map<UUID, ItemStack> pendingSell = new HashMap<>();
 
-    public ShopListener(EcoShop plugin) {
+    public ShopListener(EcoShopPro plugin) {
         this.plugin = plugin;
     }
 
     private boolean isMainTitle(String title) {
         String t = ChatColor.stripColor(title);
-        return t.equalsIgnoreCase("EcoShop");
+        return t.equalsIgnoreCase("EcoShopPro");
     }
 
     private boolean isCategoryTitle(String title) {
@@ -191,34 +193,122 @@ public class ShopListener implements Listener {
                     if (cat != null) ShopMenus.openCategory(p, cat, page + 1);
                     return;
                 }
-                // Buy listing
+                // Buy listing -> open confirm menu
                 UUID id = ShopMenus.getListingId(clicked);
                 if (id != null) {
                     e.setCancelled(true);
                     ListingsManager lm = plugin.getListingsManager();
                     Listing l = lm.getById(id);
                     if (l == null) { p.sendMessage(ChatColor.RED + "That listing is no longer available."); ShopMenus.openCategory(p, parseCategory(title), parsePage(title)); return; }
-                    if (l.getSeller().equals(p.getUniqueId())) { p.sendMessage(ChatColor.RED + "You cannot buy your own listing."); return; }
-                    if (plugin.getEconomy() == null) { p.sendMessage(ChatColor.RED + "No economy found."); return; }
-                    double price = l.getPrice();
-                    if (!plugin.getEconomy().has(p, price)) { p.sendMessage(ChatColor.RED + "You don't have enough money."); return; }
-                    // Withdraw, give item, credit seller
-                    plugin.getEconomy().withdrawPlayer(p, price);
-                    ItemStack toGive = l.getItem().clone();
-                    HashMap<Integer, ItemStack> left = p.getInventory().addItem(toGive);
-                    for (ItemStack rem : left.values()) {
-                        p.getWorld().dropItemNaturally(p.getLocation(), rem);
+                    Category cat = parseCategory(title);
+                    int page = parsePage(title);
+                    // Prevent buying own listing
+                    if (l.getSeller() != null && l.getSeller().equals(p.getUniqueId())) {
+                        p.sendMessage(ChatColor.RED + "You cannot buy your own listing.");
+                        ShopMenus.openCategory(p, cat, page);
+                        return;
                     }
-                    lm.removeListing(l.getId());
-                    lm.addToSales(l.getSeller(), price);
-                    if (Bukkit.getPlayer(l.getSeller()) != null && plugin.getEconomy() != null) {
-                        plugin.getEconomy().depositPlayer(Bukkit.getOfflinePlayer(l.getSeller()), price);
-                    }
-                    p.sendMessage(ChatColor.GREEN + "Purchased for " + price);
-                    ShopMenus.openCategory(p, parseCategory(title), parsePage(title));
+                    ShopMenus.openConfirm(p, l, cat, page, 1);
                     return;
                 }
                 e.setCancelled(true);
+            }
+        } else if (ChatColor.stripColor(title).equalsIgnoreCase("Confirm Purchase")) {
+            int slot = e.getRawSlot();
+            if (slot < inv.getSize()) {
+                ItemStack clicked = e.getCurrentItem();
+                if (clicked == null) { e.setCancelled(true); return; }
+                if (!clicked.hasItemMeta()) { e.setCancelled(true); return; }
+                String name = clicked.getItemMeta().hasDisplayName() ? ChatColor.stripColor(clicked.getItemMeta().getDisplayName()) : "";
+                String type = clicked.getItemMeta().getPersistentDataContainer().get(Constants.KEY_TYPE, PersistentDataType.STRING);
+                if (!Constants.GUI_CONFIRM.equals(type)) { e.setCancelled(true); return; }
+                UUID listingId = ShopMenus.getListingId(clicked);
+                if (listingId == null) { e.setCancelled(true); return; }
+                ListingsManager lm = plugin.getListingsManager();
+                Listing l = lm.getById(listingId);
+                if (l == null) { e.setCancelled(true); p.sendMessage(ChatColor.RED + "Listing no longer available."); ShopMenus.openMain(p); return; }
+                int currentQty = Optional.ofNullable(clicked.getItemMeta().getPersistentDataContainer().get(Constants.KEY_QUANTITY, PersistentDataType.INTEGER)).orElse(1);
+                Category cat = null;
+                String catName = clicked.getItemMeta().getPersistentDataContainer().get(Constants.KEY_CATEGORY, PersistentDataType.STRING);
+                if (catName != null && !catName.isEmpty()) {
+                    try { cat = Category.valueOf(catName); } catch (Exception ignored) {}
+                }
+                int page = Optional.ofNullable(clicked.getItemMeta().getPersistentDataContainer().get(Constants.KEY_PAGE, PersistentDataType.INTEGER)).orElse(0);
+                int maxQty = Math.max(1, l.getItem().getAmount());
+
+                e.setCancelled(true);
+
+                // Quantity adjustment
+                if (name.equals("-32")) {
+                    int q = Math.max(1, currentQty - 32);
+                    ShopMenus.openConfirm(p, l, cat, page, q);
+                    return;
+                } else if (name.equals("-1")) {
+                    int q = Math.max(1, currentQty - 1);
+                    ShopMenus.openConfirm(p, l, cat, page, q);
+                    return;
+                } else if (name.equals("+1")) {
+                    int q = Math.min(maxQty, currentQty + 1);
+                    ShopMenus.openConfirm(p, l, cat, page, q);
+                    return;
+                } else if (name.equals("+32")) {
+                    int q = Math.min(maxQty, currentQty + 32);
+                    ShopMenus.openConfirm(p, l, cat, page, q);
+                    return;
+                } else if (name.equalsIgnoreCase("Buy All")) {
+                    ShopMenus.openConfirm(p, l, cat, page, maxQty);
+                    return;
+                } else if (name.equalsIgnoreCase("Cancel")) {
+                    if (cat != null) ShopMenus.openCategory(p, cat, page); else ShopMenus.openMain(p);
+                    return;
+                } else if (name.equalsIgnoreCase("Confirm")) {
+                    // Prevent buying own listing (double-check at confirm time)
+                    if (l.getSeller() != null && l.getSeller().equals(p.getUniqueId())) {
+                        p.sendMessage(ChatColor.RED + "You cannot buy your own listing.");
+                        if (cat != null) ShopMenus.openCategory(p, cat, page); else ShopMenus.openMain(p);
+                        return;
+                    }
+                    // Perform purchase for currentQty
+                    if (plugin.getEconomy() == null) { p.sendMessage(ChatColor.RED + "No economy found."); return; }
+                    int qty = Math.min(currentQty, maxQty);
+                    double unitPrice = l.getPrice() / Math.max(1, l.getItem().getAmount());
+                    double total = unitPrice * qty;
+                    if (!plugin.getEconomy().has(p, total)) { p.sendMessage(ChatColor.RED + "You don't have enough money."); return; }
+                    // Prepare item to give with selected quantity
+                    ItemStack toGive = l.getItem().clone();
+                    toGive.setAmount(qty);
+                    HashMap<Integer, ItemStack> left = p.getInventory().addItem(toGive);
+                    for (ItemStack rem : left.values()) p.getWorld().dropItemNaturally(p.getLocation(), rem);
+                    // Economy transfer
+                    plugin.getEconomy().withdrawPlayer(p, total);
+                    if (Bukkit.getPlayer(l.getSeller()) != null && plugin.getEconomy() != null) {
+                        plugin.getEconomy().depositPlayer(Bukkit.getOfflinePlayer(l.getSeller()), total);
+                    }
+                    // Update or remove listing
+                    ItemStack remaining = l.getItem().clone();
+                    int newAmt = remaining.getAmount() - qty;
+                    ListingsManager manager = plugin.getListingsManager();
+                    if (newAmt <= 0) {
+                        manager.removeListing(l.getId());
+                    } else {
+                        remaining.setAmount(newAmt);
+                        l.setItem(remaining);
+                        l.setPrice(unitPrice * newAmt); // Keep unit price consistent
+                        manager.updateListing(l);
+                    }
+                    manager.addToSales(l.getSeller(), total);
+
+                    // Notify seller if online
+                    org.bukkit.entity.Player sellerPlayer = Bukkit.getPlayer(l.getSeller());
+                    if (sellerPlayer != null && sellerPlayer.isOnline()) {
+                        String itemName = prettyItemName(toGive);
+                        sellerPlayer.sendMessage(ChatColor.YELLOW + p.getName() + ChatColor.GRAY + " bought " + ChatColor.AQUA + qty + "x " + itemName + ChatColor.GRAY + " from your listing for " + ChatColor.GREEN + String.format(Locale.US, "%.2f", total) + ChatColor.GRAY + ".");
+                    }
+
+                    p.sendMessage(ChatColor.GREEN + "Purchased " + qty + " for " + total);
+                    if (cat != null) ShopMenus.openCategory(p, cat, page); else ShopMenus.openMain(p);
+                    return;
+                }
             }
         }
     }
@@ -291,7 +381,11 @@ public class ShopListener implements Listener {
         // Clear player cursor just in case and close GUI to prompt in chat to avoid further GUI interactions
         p.setItemOnCursor(new ItemStack(Material.AIR));
         p.closeInventory();
-        p.sendMessage(ChatColor.GREEN + "Enter a sale price in chat, or type 'cancel' to abort.");
+        double suggestion = Pricing.suggestMaxPrice(toSell);
+        if (suggestion > 0) {
+            p.sendMessage(ChatColor.YELLOW + String.format("You can sell this for a max of %.2f", suggestion));
+        }
+        p.sendMessage(ChatColor.GREEN + "Enter a sale price in chat (max above), or type 'cancel' to abort.");
     }
 
     @EventHandler
@@ -318,12 +412,23 @@ public class ShopListener implements Listener {
         try {
             double price = Double.parseDouble(msg);
             if (price <= 0) throw new NumberFormatException();
-            ItemStack item = pendingSell.remove(p.getUniqueId());
+            ItemStack item = pendingSell.get(p.getUniqueId());
             if (item == null) return;
+            double max = Pricing.suggestMaxPrice(item);
+            if (price > max) {
+                p.sendMessage(ChatColor.RED + String.format("You can sell this for a max of %.2f", max));
+                p.sendMessage(ChatColor.YELLOW + "Please enter a price at or below the max, or type 'cancel'.");
+                return;
+            }
+            // Accept and list
+            ItemStack itemToList = pendingSell.remove(p.getUniqueId());
+            final ItemStack finalItem = itemToList;
+            final double finalPrice = Math.round(price * 100.0) / 100.0;
+            final UUID sellerId = p.getUniqueId();
             Bukkit.getScheduler().runTask(plugin, () -> {
-                Category cat = Category.categorize(item.getType());
-                plugin.getListingsManager().addListing(p.getUniqueId(), item, price, cat);
-                p.sendMessage(ChatColor.GREEN + "Item listed for " + price);
+                Category cat = Category.categorize(finalItem.getType());
+                plugin.getListingsManager().addListing(sellerId, finalItem, finalPrice, cat);
+                p.sendMessage(ChatColor.GREEN + "Item listed for " + finalPrice);
                 ShopMenus.openMain(p);
             });
         } catch (NumberFormatException ex) {
@@ -344,5 +449,23 @@ public class ShopListener implements Listener {
             HashMap<Integer, ItemStack> left = e.getPlayer().getInventory().addItem(item);
             for (ItemStack rem : left.values()) e.getPlayer().getWorld().dropItemNaturally(e.getPlayer().getLocation(), rem);
         }
+    }
+
+    private static String prettyItemName(ItemStack item) {
+        if (item == null) return "Item";
+        if (item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
+            String dn = ChatColor.stripColor(item.getItemMeta().getDisplayName());
+            if (dn != null && !dn.trim().isEmpty()) return dn;
+        }
+        String[] parts = item.getType().name().toLowerCase(Locale.ROOT).split("_");
+        StringBuilder sb = new StringBuilder();
+        for (String p : parts) {
+            if (p.isEmpty()) continue;
+            sb.append(Character.toUpperCase(p.charAt(0))).append(p.substring(1)).append(" ");
+        }
+        String name = sb.toString().trim();
+        int amt = Math.max(1, item.getAmount());
+        // Do not prefix quantity here; caller decides, but include for clarity if needed elsewhere
+        return name;
     }
 }
