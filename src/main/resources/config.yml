@@ -15,6 +15,19 @@ pricing:
     NETHERITE_SCRAP: 2000.0 # Dedicated rarity for Netherite Scrap; defaults to EPIC value by default
     # If you previously used the misspelled key 'LEGENDARY', it will be migrated automatically on next load.
 
+  # Armor-specific base price per unit for each rarity. If a value is omitted here, it falls back to per_rarity_base.
+  per_rarity_base_armor:
+    BASIC: 5.0
+    COMMON: 10.0
+    UNCOMMON: 20.0
+    RARE: 600.0
+    EPIC: 2000.0
+    LEGENDARY: 150000.0
+    ELYTRA: 1300000.0
+    NETHERITE_BLOCK: 2000.0
+    NETHERITE_INGOT: 150000.0
+    NETHERITE_SCRAP: 2000.0
+
   # Optional overrides. You can specify exact per-unit prices under `overrides` by material name.
   # Additionally, `overrides.Blocks` lets you assign a rarity per natural block category.
   # And `overrides.Craftables` lets you assign a rarity per craftable item/block.

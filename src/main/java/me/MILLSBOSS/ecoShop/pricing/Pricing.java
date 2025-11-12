@@ -23,6 +23,8 @@ public final class Pricing {
     public enum Rarity { BASIC, COMMON, UNCOMMON, RARE, EPIC, NETHERITE_BLOCK, NETHERITE_INGOT, NETHERITE_SCRAP, LEGENDARY, ELYTRA }
 
     private static final Map<Rarity, Double> perRarityBase = new EnumMap<>(Rarity.class);
+    // Armor-specific base values per rarity
+    private static final Map<Rarity, Double> perRarityBaseArmor = new EnumMap<>(Rarity.class);
     private static ConfigurationSection overridesSection;
     // New: rarity overrides by material via overrides.Blocks/Craftables
     private static final Map<Material, Rarity> rarityOverrides = new HashMap<>();
@@ -71,6 +73,20 @@ public final class Pricing {
         double elytraDefault = legendaryVal; // preserve old behavior by default
         double elytraVal = perRarity.getDouble("ELYTRA", elytraDefault);
         perRarityBase.put(Rarity.ELYTRA, elytraVal);
+
+        // Armor-specific per-rarity base, defaults to general per_rarity_base if missing to preserve compatibility
+        ConfigurationSection perRarityArmor = section.getConfigurationSection("per_rarity_base_armor");
+        if (perRarityArmor == null) perRarityArmor = section.createSection("per_rarity_base_armor");
+        perRarityBaseArmor.put(Rarity.BASIC, perRarityArmor.getDouble("BASIC", perRarityBase.get(Rarity.BASIC)));
+        perRarityBaseArmor.put(Rarity.COMMON, perRarityArmor.getDouble("COMMON", perRarityBase.get(Rarity.COMMON)));
+        perRarityBaseArmor.put(Rarity.UNCOMMON, perRarityArmor.getDouble("UNCOMMON", perRarityBase.get(Rarity.UNCOMMON)));
+        perRarityBaseArmor.put(Rarity.RARE, perRarityArmor.getDouble("RARE", perRarityBase.get(Rarity.RARE)));
+        perRarityBaseArmor.put(Rarity.EPIC, perRarityArmor.getDouble("EPIC", perRarityBase.get(Rarity.EPIC)));
+        perRarityBaseArmor.put(Rarity.NETHERITE_BLOCK, perRarityArmor.getDouble("NETHERITE_BLOCK", perRarityBase.get(Rarity.NETHERITE_BLOCK)));
+        perRarityBaseArmor.put(Rarity.NETHERITE_SCRAP, perRarityArmor.getDouble("NETHERITE_SCRAP", perRarityBase.get(Rarity.NETHERITE_SCRAP)));
+        perRarityBaseArmor.put(Rarity.NETHERITE_INGOT, perRarityArmor.getDouble("NETHERITE_INGOT", perRarityBase.get(Rarity.NETHERITE_INGOT)));
+        perRarityBaseArmor.put(Rarity.LEGENDARY, perRarityArmor.getDouble("LEGENDARY", perRarityBase.get(Rarity.LEGENDARY)));
+        perRarityBaseArmor.put(Rarity.ELYTRA, perRarityArmor.getDouble("ELYTRA", perRarityBase.get(Rarity.ELYTRA)));
 
         overridesSection = section.getConfigurationSection("overrides");
         // Parse rarity overrides from overrides.Blocks and Craftables
@@ -219,6 +235,21 @@ public final class Pricing {
         perRarity.set("ELYTRA", perRarityBase.get(Rarity.ELYTRA));
         // If user had the misspelled key, clean it up
         if (perRarity.isSet("LEGANDERY")) perRarity.set("LEGANDERY", null);
+
+        // Save armor-specific per-rarity base as well
+        ConfigurationSection perRarityArmorOut = section.getConfigurationSection("per_rarity_base_armor");
+        if (perRarityArmorOut == null) perRarityArmorOut = section.createSection("per_rarity_base_armor");
+        perRarityArmorOut.set("BASIC", perRarityBaseArmor.get(Rarity.BASIC));
+        perRarityArmorOut.set("COMMON", perRarityBaseArmor.get(Rarity.COMMON));
+        perRarityArmorOut.set("UNCOMMON", perRarityBaseArmor.get(Rarity.UNCOMMON));
+        perRarityArmorOut.set("RARE", perRarityBaseArmor.get(Rarity.RARE));
+        perRarityArmorOut.set("EPIC", perRarityBaseArmor.get(Rarity.EPIC));
+        perRarityArmorOut.set("NETHERITE_BLOCK", perRarityBaseArmor.get(Rarity.NETHERITE_BLOCK));
+        perRarityArmorOut.set("NETHERITE_SCRAP", perRarityBaseArmor.get(Rarity.NETHERITE_SCRAP));
+        perRarityArmorOut.set("NETHERITE_INGOT", perRarityBaseArmor.get(Rarity.NETHERITE_INGOT));
+        perRarityArmorOut.set("LEGENDARY", perRarityBaseArmor.get(Rarity.LEGENDARY));
+        perRarityArmorOut.set("ELYTRA", perRarityBaseArmor.get(Rarity.ELYTRA));
+
         plugin.saveConfig();
     }
 
@@ -301,7 +332,8 @@ public final class Pricing {
             // Next, check rarity override from blocks/craftables category
             Rarity rOverride = rarityOverrides.get(mat);
             Rarity r = (rOverride != null) ? rOverride : inferRarity(mat);
-            perUnit = perRarityBase.getOrDefault(r, 5.0);
+            Map<Rarity, Double> baseMap = isArmor(mat) ? perRarityBaseArmor : perRarityBase;
+            perUnit = baseMap.getOrDefault(r, 5.0);
         }
         int amount = Math.max(1, item.getAmount());
         return round2(perUnit * amount);
@@ -352,5 +384,12 @@ public final class Pricing {
 
     private static double round2(double v) {
         return Math.round(v * 100.0) / 100.0;
+    }
+
+    private static boolean isArmor(Material mat) {
+        // Treat wearable armor and elytra as armor for base selection
+        String n = mat.name();
+        if (n.endsWith("_HELMET") || n.endsWith("_CHESTPLATE") || n.endsWith("_LEGGINGS") || n.endsWith("_BOOTS")) return true;
+        return mat == Material.TURTLE_HELMET || mat == Material.ELYTRA;
     }
 }
