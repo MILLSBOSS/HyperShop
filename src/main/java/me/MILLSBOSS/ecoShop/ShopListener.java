@@ -105,8 +105,30 @@ public class ShopListener implements Listener {
                     e.setCancelled(true);
                     return;
                 }
+                // Server Sell slot handling (instant sell at 50%)
+                if (ShopMenus.isServerSellSlot(slot)) {
+                    ItemStack cursor = e.getCursor();
+                    // Block picking up the placeholder pane
+                    if (clicked != null && clicked.getType() == Material.BLUE_STAINED_GLASS_PANE && (e.getAction() == InventoryAction.PICKUP_ALL || e.getAction() == InventoryAction.PICKUP_HALF || e.getAction() == InventoryAction.PICKUP_ONE || e.getAction() == InventoryAction.PICKUP_SOME)) {
+                        e.setCancelled(true);
+                        return;
+                    }
+                    if (cursor != null && cursor.getType() != Material.AIR && (e.getAction() == InventoryAction.PLACE_ALL || e.getAction() == InventoryAction.PLACE_ONE || e.getAction() == InventoryAction.PLACE_SOME || e.getAction() == InventoryAction.SWAP_WITH_CURSOR)) {
+                        e.setCancelled(false);
+                        Bukkit.getScheduler().runTask(plugin, () -> handleServerSellSlotItem(p));
+                        return;
+                    }
+                    e.setCancelled(true);
+                    return;
+                }
                 // Sell slot handling
                 if (ShopMenus.isSellSlot(slot)) {
+                    // If player already has a pending item awaiting price, do not allow adding another
+                    if (pendingSell.containsKey(p.getUniqueId())) {
+                        e.setCancelled(true);
+                        p.sendMessage(ChatColor.RED + "You already have an item pending a price. Enter a price in chat or type 'cancel'.");
+                        return;
+                    }
                     ItemStack cursor = e.getCursor();
                     // Block picking up the placeholder pane, but allow swapping with cursor so players can place items into the sell slot
                     if (clicked != null && clicked.getType() == Material.LIGHT_GRAY_STAINED_GLASS_PANE && (e.getAction() == InventoryAction.PICKUP_ALL || e.getAction() == InventoryAction.PICKUP_HALF || e.getAction() == InventoryAction.PICKUP_ONE || e.getAction() == InventoryAction.PICKUP_SOME)) {
@@ -202,12 +224,6 @@ public class ShopListener implements Listener {
                     if (l == null) { p.sendMessage(ChatColor.RED + "That listing is no longer available."); ShopMenus.openCategory(p, parseCategory(title), parsePage(title)); return; }
                     Category cat = parseCategory(title);
                     int page = parsePage(title);
-                    // Prevent buying own listing
-                    if (l.getSeller() != null && l.getSeller().equals(p.getUniqueId())) {
-                        p.sendMessage(ChatColor.RED + "You cannot buy your own listing.");
-                        ShopMenus.openCategory(p, cat, page);
-                        return;
-                    }
                     ShopMenus.openConfirm(p, l, cat, page, 1);
                     return;
                 }
@@ -262,12 +278,6 @@ public class ShopListener implements Listener {
                     if (cat != null) ShopMenus.openCategory(p, cat, page); else ShopMenus.openMain(p);
                     return;
                 } else if (name.equalsIgnoreCase("Confirm")) {
-                    // Prevent buying own listing (double-check at confirm time)
-                    if (l.getSeller() != null && l.getSeller().equals(p.getUniqueId())) {
-                        p.sendMessage(ChatColor.RED + "You cannot buy your own listing.");
-                        if (cat != null) ShopMenus.openCategory(p, cat, page); else ShopMenus.openMain(p);
-                        return;
-                    }
                     // Perform purchase for currentQty
                     if (plugin.getEconomy() == null) { p.sendMessage(ChatColor.RED + "No economy found."); return; }
                     int qty = Math.min(currentQty, maxQty);
@@ -323,30 +333,39 @@ public class ShopListener implements Listener {
         if (!isMainTitle(title)) return;
 
         // Identify which raw slots of the TOP inventory would be affected by this drag
-        // Cancel if any top-inventory slot other than the sell slot is targeted
+        // Cancel if any top-inventory slot other than the sell or server sell slot is targeted
         boolean affectsTop = false;
-        boolean affectsOnlySell = true;
+        boolean affectsOnlySupported = true;
+        boolean affectsSell = false;
+        boolean affectsServerSell = false;
         for (int raw : e.getRawSlots()) {
             if (raw < top.getSize()) { // inside top inventory GUI
                 affectsTop = true;
-                if (raw != 49) {
-                    affectsOnlySell = false;
-                    break;
-                }
+                if (raw == 49) affectsSell = true;
+                else if (raw == 48) affectsServerSell = true;
+                else { affectsOnlySupported = false; break; }
             }
         }
 
-        if (affectsTop && !affectsOnlySell) {
+        if (affectsTop && !affectsOnlySupported) {
             // Disallow dragging into any other top slots
             e.setCancelled(true);
             return;
         }
 
-        if (affectsOnlySell && e.getRawSlots().contains(49)) {
-            // Allow the drag into the sell slot, then process on the next tick
-            // Ensure event not cancelled
+        if (affectsSell && e.getRawSlots().contains(49)) {
+            // If player already has a pending item awaiting price, do not allow adding another
+            if (pendingSell.containsKey(p.getUniqueId())) {
+                e.setCancelled(true);
+                p.sendMessage(ChatColor.RED + "You already have an item pending a price. Enter a price in chat or type 'cancel'.");
+                return;
+            }
             e.setCancelled(false);
             Bukkit.getScheduler().runTask(plugin, () -> handleSellSlotItem(p));
+        }
+        if (affectsServerSell && e.getRawSlots().contains(48)) {
+            e.setCancelled(false);
+            Bukkit.getScheduler().runTask(plugin, () -> handleServerSellSlotItem(p));
         }
     }
 
@@ -359,7 +378,14 @@ public class ShopListener implements Listener {
         if (inv == null || !isMainTitle(title)) return;
         if (e.getAction() == InventoryAction.PLACE_ALL || e.getAction() == InventoryAction.SWAP_WITH_CURSOR || e.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY || e.getAction() == InventoryAction.PLACE_SOME || e.getAction() == InventoryAction.PLACE_ONE) {
             if (e.getRawSlot() == 49) {
-                Bukkit.getScheduler().runTask(plugin, () -> handleSellSlotItem(p));
+                if (pendingSell.containsKey(p.getUniqueId())) {
+                    e.setCancelled(true);
+                    p.sendMessage(ChatColor.RED + "You already have an item pending a price. Enter a price in chat or type 'cancel'.");
+                } else {
+                    Bukkit.getScheduler().runTask(plugin, () -> handleSellSlotItem(p));
+                }
+            } else if (e.getRawSlot() == 48) {
+                Bukkit.getScheduler().runTask(plugin, () -> handleServerSellSlotItem(p));
             }
         }
     }
@@ -374,6 +400,15 @@ public class ShopListener implements Listener {
         if (inSell.hasItemMeta() && Constants.GUI_SELL_PLACEHOLDER.equals(inSell.getItemMeta().getPersistentDataContainer().get(Constants.KEY_TYPE, org.bukkit.persistence.PersistentDataType.STRING))) {
             return;
         }
+        // If player already has a pending item, immediately return the newly placed item
+        if (pendingSell.containsKey(p.getUniqueId())) {
+            ItemStack toReturn = inSell.clone();
+            inv.setItem(49, ShopMenus.sellSlotItem());
+            HashMap<Integer, ItemStack> left = p.getInventory().addItem(toReturn);
+            for (ItemStack rem : left.values()) p.getWorld().dropItemNaturally(p.getLocation(), rem);
+            p.sendMessage(ChatColor.RED + "You already have an item pending a price. Enter a price in chat or type 'cancel'.");
+            return;
+        }
         // Take the item into pending and clear sell slot
         ItemStack toSell = inSell.clone();
         pendingSell.put(p.getUniqueId(), toSell);
@@ -386,6 +421,41 @@ public class ShopListener implements Listener {
             p.sendMessage(ChatColor.YELLOW + String.format("You can sell this for a max of %.2f", suggestion));
         }
         p.sendMessage(ChatColor.GREEN + "Enter a sale price in chat (max above), or type 'cancel' to abort.");
+    }
+
+    private void handleServerSellSlotItem(Player p) {
+        Inventory inv = p.getOpenInventory().getTopInventory();
+        String title = p.getOpenInventory().getTitle();
+        if (inv == null || !isMainTitle(title)) return;
+        ItemStack inSell = inv.getItem(48);
+        if (inSell == null || inSell.getType() == Material.AIR) return;
+        // Ignore if it's our tagged placeholder
+        if (inSell.hasItemMeta() && Constants.GUI_SERVER_SELL_PLACEHOLDER.equals(inSell.getItemMeta().getPersistentDataContainer().get(Constants.KEY_TYPE, org.bukkit.persistence.PersistentDataType.STRING))) {
+            return;
+        }
+        // Calculate payout (50% of suggested max)
+        double suggested = Pricing.suggestMaxPrice(inSell);
+        double payout = Math.round(suggested * 0.5 * 100.0) / 100.0;
+        // Restore placeholder now
+        inv.setItem(48, ShopMenus.serverSellSlotItem());
+        // Clear cursor just in case
+        p.setItemOnCursor(new ItemStack(Material.AIR));
+        if (plugin.getEconomy() == null) {
+            // return item
+            HashMap<Integer, ItemStack> left = p.getInventory().addItem(inSell.clone());
+            for (ItemStack rem : left.values()) p.getWorld().dropItemNaturally(p.getLocation(), rem);
+            p.sendMessage(ChatColor.RED + "No economy found. Item returned.");
+            return;
+        }
+        if (payout <= 0.0) {
+            HashMap<Integer, ItemStack> left = p.getInventory().addItem(inSell.clone());
+            for (ItemStack rem : left.values()) p.getWorld().dropItemNaturally(p.getLocation(), rem);
+            p.sendMessage(ChatColor.RED + "This item cannot be sold to the server.");
+            return;
+        }
+        // Deposit and consume the item (it was removed from GUI)
+        plugin.getEconomy().depositPlayer(p, payout);
+        p.sendMessage(ChatColor.GREEN + "Sold to server for " + ChatColor.AQUA + String.format(Locale.US, "%.2f", payout));
     }
 
     @EventHandler

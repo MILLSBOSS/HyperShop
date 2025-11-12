@@ -10,6 +10,8 @@ import org.bukkit.block.CreatureSpawner;
 import org.bukkit.entity.EntityType;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
+import org.bukkit.block.ShulkerBox;
+import org.bukkit.inventory.Inventory;
 
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -18,7 +20,7 @@ import java.util.Map;
 
 public final class Pricing {
 
-    public enum Rarity { BASIC, COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, ELYTRA }
+    public enum Rarity { BASIC, COMMON, UNCOMMON, RARE, EPIC, NETHERITE_BLOCK, NETHERITE_INGOT, NETHERITE_SCRAP, LEGENDARY, ELYTRA }
 
     private static final Map<Rarity, Double> perRarityBase = new EnumMap<>(Rarity.class);
     private static ConfigurationSection overridesSection;
@@ -48,11 +50,23 @@ public final class Pricing {
         perRarityBase.put(Rarity.UNCOMMON, perRarity.getDouble("UNCOMMON", 20.0));
         perRarityBase.put(Rarity.RARE, perRarity.getDouble("RARE", 100.0));
         perRarityBase.put(Rarity.EPIC, perRarity.getDouble("EPIC", 500.0));
+        // Dedicated Netherite Block rarity. Defaults to EPIC to preserve previous behavior unless configured.
+        double netheriteBlockDefault = perRarity.getDouble("EPIC", 500.0);
+        double netheriteBlockVal = perRarity.getDouble("NETHERITE_BLOCK", netheriteBlockDefault);
+        perRarityBase.put(Rarity.NETHERITE_BLOCK, netheriteBlockVal);
+        // Dedicated Netherite Scrap rarity. Defaults to EPIC to preserve previous behavior unless configured.
+        double netheriteScrapDefault = perRarity.getDouble("EPIC", 500.0);
+        double netheriteScrapVal = perRarity.getDouble("NETHERITE_SCRAP", netheriteScrapDefault);
+        perRarityBase.put(Rarity.NETHERITE_SCRAP, netheriteScrapVal);
         // Support misspelling "LEGANDERY" in existing configs, fall back to default if absent
         double legendaryDefault = 2000.0;
         double legendaryVal = perRarity.isSet("LEGENDARY") ? perRarity.getDouble("LEGENDARY", legendaryDefault)
                 : perRarity.getDouble("LEGANDERY", legendaryDefault);
         perRarityBase.put(Rarity.LEGENDARY, legendaryVal);
+        // Dedicated Netherite Ingot rarity: defaults to LEGENDARY value to preserve old behavior unless configured.
+        double netheriteIngotDefault = legendaryVal;
+        double netheriteIngotVal = perRarity.getDouble("NETHERITE_INGOT", netheriteIngotDefault);
+        perRarityBase.put(Rarity.NETHERITE_INGOT, netheriteIngotVal);
         // New dedicated Elytra rarity. If not configured, fall back to LEGENDARY value to preserve previous behavior.
         double elytraDefault = legendaryVal; // preserve old behavior by default
         double elytraVal = perRarity.getDouble("ELYTRA", elytraDefault);
@@ -198,6 +212,9 @@ public final class Pricing {
         perRarity.set("UNCOMMON", perRarityBase.get(Rarity.UNCOMMON));
         perRarity.set("RARE", perRarityBase.get(Rarity.RARE));
         perRarity.set("EPIC", perRarityBase.get(Rarity.EPIC));
+        perRarity.set("NETHERITE_BLOCK", perRarityBase.get(Rarity.NETHERITE_BLOCK));
+        perRarity.set("NETHERITE_SCRAP", perRarityBase.get(Rarity.NETHERITE_SCRAP));
+        perRarity.set("NETHERITE_INGOT", perRarityBase.get(Rarity.NETHERITE_INGOT));
         perRarity.set("LEGENDARY", perRarityBase.get(Rarity.LEGENDARY));
         perRarity.set("ELYTRA", perRarityBase.get(Rarity.ELYTRA));
         // If user had the misspelled key, clean it up
@@ -208,6 +225,28 @@ public final class Pricing {
     public static double suggestMaxPrice(ItemStack item) {
         if (item == null || item.getType() == Material.AIR) return 0.0;
         Material mat = item.getType();
+
+        // Special handling: Shulker boxes should be priced based on their contents
+        try {
+            if (item.hasItemMeta() && item.getItemMeta() instanceof BlockStateMeta) {
+                BlockStateMeta bsm = (BlockStateMeta) item.getItemMeta();
+                BlockState state = bsm.getBlockState();
+                if (state instanceof ShulkerBox) {
+                    Inventory inv = ((ShulkerBox) state).getInventory();
+                    double total = 0.0;
+                    if (inv != null) {
+                        for (ItemStack is : inv.getContents()) {
+                            if (is == null || is.getType() == Material.AIR) continue;
+                            total += suggestMaxPrice(is);
+                        }
+                    }
+                    return round2(total);
+                }
+            }
+        } catch (Throwable ignored) {
+            // If server API differs, fall through to normal pricing
+        }
+
         // Per-material numeric override (per unit) if present
         double perUnit;
         Double override = getNumericOverride(mat);
@@ -292,6 +331,9 @@ public final class Pricing {
 
     public static Rarity inferRarity(Material mat) {
         if (mat == Material.ELYTRA) return Rarity.ELYTRA; // Elytra has its own rarity tier
+        if (mat == Material.NETHERITE_BLOCK) return Rarity.NETHERITE_BLOCK; // Dedicated rarity for Netherite Block
+        if (mat == Material.NETHERITE_INGOT) return Rarity.NETHERITE_INGOT; // Dedicated rarity for Netherite Ingot
+        if (mat == Material.NETHERITE_SCRAP) return Rarity.NETHERITE_SCRAP; // Dedicated rarity for Netherite Scrap
         String name = mat.name();
         // Very lightweight heuristic
         if (containsAny(name, "NETHERITE", "DRAGON", "BEACON", "TOTEM")) return Rarity.EPIC;

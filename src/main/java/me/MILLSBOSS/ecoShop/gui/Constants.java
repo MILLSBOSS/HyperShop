@@ -14,6 +14,7 @@ public final class Constants {
     public static final String GUI_CATEGORY = "category";
     public static final String GUI_MY_LISTINGS = "mylistings";
     public static final String GUI_SELL_PLACEHOLDER = "sell-placeholder";
+    public static final String GUI_SERVER_SELL_PLACEHOLDER = "server-sell-placeholder";
     public static final String GUI_CONFIRM = "confirm";
 
     private Constants() {}

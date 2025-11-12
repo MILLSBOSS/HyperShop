@@ -9,6 +9,7 @@ public enum Category {
     ARMOR("Armor", Material.IRON_CHESTPLATE),
     FOOD("Food", Material.COOKED_BEEF),
     ORES("Ores", Material.IRON_INGOT),
+    SAPLINGS("Saplings", Material.OAK_SAPLING),
     PLANTS("Plants", Material.OAK_SAPLING),
     REDSTONE("Redstone", Material.REDSTONE),
     SPAWNERS("Spawners", Material.SPAWNER),
@@ -40,7 +41,9 @@ public enum Category {
         if (n.contains("SWORD") || n.contains("BOW") || n.contains("CROSSBOW") || n.contains("TRIDENT")) return WEAPONS;
         if (n.contains("HELMET") || n.contains("CHESTPLATE") || n.contains("LEGGINGS") || n.contains("BOOTS") || n.contains("SHIELD")) return ARMOR;
         if (n.contains("PICKAXE") || n.contains("AXE") || n.contains("SHOVEL") || n.contains("HOE") || n.contains("SHEARS") || n.contains("FISHING_ROD") || n.contains("FLINT_AND_STEEL")) return TOOLS;
-        if (n.contains("APPLE") || n.contains("BEEF") || n.contains("PORK") || n.contains("MUTTON") || n.contains("CHICKEN") || n.contains("RABBIT") || n.contains("COD") || n.contains("SALMON") || n.contains("BREAD") || n.contains("POTATO") || n.contains("CARROT") || n.contains("SUSPICIOUS_STEW") || n.contains("BEETROOT") || n.contains("COOKIE") || n.contains("MELON") || n.contains("PUMPKIN_PIE") || n.contains("CHORUS_FRUIT") || n.contains("HONEY")) return FOOD;
+        // Saplings and seeds dedicated category (check before generic PLANTS)
+        if (n.contains("SAPLING") || n.contains("SEEDS") || n.contains("PROPAGULE") || n.contains("FUNGUS") || n.equals("PITCHER_POD")) return SAPLINGS;
+        if (n.contains("APPLE") || n.contains("BEEF") || n.contains("PORK") || n.contains("MUTTON") || n.contains("CHICKEN") || n.contains("RABBIT") || n.contains("COD") || n.contains("SALMON") || n.contains("BREAD") || n.contains("POTATO") || n.contains("CARROT") || n.contains("SUSPICIOUS_STEW") || n.contains("BEETROOT") || n.contains("COOKIE") || n.contains("MELON") || n.contains("PUMPKIN_PIE") || n.contains("CHORUS_FRUIT") || n.contains("HONEY") || n.equals("WHEAT")) return FOOD;
         if (n.endsWith("_ORE") || n.contains("INGOT") || n.contains("NUGGET") || n.contains("RAW_")) return ORES;
         if (n.contains("SAPLING") || n.contains("SEEDS") || n.contains("FLOWER") || n.contains("LEAVES") || n.contains("GRASS") || n.contains("MUSHROOM") || n.contains("VINE") || n.contains("WART") || n.contains("CROP")) return PLANTS;
         if (n.contains("REDSTONE") || n.contains("REPEATER") || n.contains("COMPARATOR") || n.contains("PISTON") || n.contains("OBSERVER") || n.contains("HOPPER") || n.contains("DISPENSER") || n.contains("DROPPER") || n.contains("LEVER") || n.contains("BUTTON") || n.contains("PRESSURE_PLATE") || n.contains("DAYLIGHT") || n.contains("TARGET")) return REDSTONE;
