@@ -26,6 +26,8 @@ public class ShopListener implements Listener {
 
     // pending sell: player -> item to list
     private final Map<UUID, ItemStack> pendingSell = new HashMap<>();
+    // last time a player completed a listing/server-sell action, to throttle rapid uploads
+    private final Map<UUID, Long> lastListingAction = new HashMap<>();
 
     public ShopListener(EcoShopPro plugin) {
         this.plugin = plugin;
@@ -222,6 +224,12 @@ public class ShopListener implements Listener {
                     ListingsManager lm = plugin.getListingsManager();
                     Listing l = lm.getById(id);
                     if (l == null) { p.sendMessage(ChatColor.RED + "That listing is no longer available."); ShopMenus.openCategory(p, parseCategory(title), parsePage(title)); return; }
+                    // Prevent buying own listing
+                    if (l.getSeller().equals(p.getUniqueId())) {
+                        p.sendMessage(ChatColor.RED + "You cannot buy your own listing.");
+                        ShopMenus.openCategory(p, parseCategory(title), parsePage(title));
+                        return;
+                    }
                     Category cat = parseCategory(title);
                     int page = parsePage(title);
                     ShopMenus.openConfirm(p, l, cat, page, 1);
@@ -279,6 +287,11 @@ public class ShopListener implements Listener {
                     return;
                 } else if (name.equalsIgnoreCase("Confirm")) {
                     // Perform purchase for currentQty
+                    if (l.getSeller().equals(p.getUniqueId())) {
+                        p.sendMessage(ChatColor.RED + "You cannot buy your own listing.");
+                        if (cat != null) ShopMenus.openCategory(p, cat, page); else ShopMenus.openMain(p);
+                        return;
+                    }
                     if (plugin.getEconomy() == null) { p.sendMessage(ChatColor.RED + "No economy found."); return; }
                     int qty = Math.min(currentQty, maxQty);
                     double unitPrice = l.getPrice() / Math.max(1, l.getItem().getAmount());
@@ -433,6 +446,17 @@ public class ShopListener implements Listener {
         if (inSell.hasItemMeta() && Constants.GUI_SERVER_SELL_PLACEHOLDER.equals(inSell.getItemMeta().getPersistentDataContainer().get(Constants.KEY_TYPE, org.bukkit.persistence.PersistentDataType.STRING))) {
             return;
         }
+        // Throttle server-sell to avoid rapid actions that can trigger anticheat
+        long now = System.currentTimeMillis();
+        long minInterval = Math.max(0L, plugin.getListingThrottleMs());
+        long last = lastListingAction.getOrDefault(p.getUniqueId(), 0L);
+        long remaining = last + minInterval - now;
+        if (remaining > 0) {
+            // schedule after remaining delay on main thread
+            Bukkit.getScheduler().runTaskLater(plugin, () -> handleServerSellSlotItem(p), Math.max(1L, remaining / 50L));
+            return;
+        }
+        lastListingAction.put(p.getUniqueId(), now);
         // Calculate payout (50% of suggested max)
         double suggested = Pricing.suggestMaxPrice(inSell);
         double payout = Math.round(suggested * 0.5 * 100.0) / 100.0;
@@ -495,11 +519,28 @@ public class ShopListener implements Listener {
             final ItemStack finalItem = itemToList;
             final double finalPrice = Math.round(price * 100.0) / 100.0;
             final UUID sellerId = p.getUniqueId();
+            // Throttle listing creation to avoid triggering anticheat when uploading repeatedly
             Bukkit.getScheduler().runTask(plugin, () -> {
-                Category cat = Category.categorize(finalItem.getType());
-                plugin.getListingsManager().addListing(sellerId, finalItem, finalPrice, cat);
-                p.sendMessage(ChatColor.GREEN + "Item listed for " + finalPrice);
-                ShopMenus.openMain(p);
+                long now = System.currentTimeMillis();
+                long minInterval = Math.max(0L, plugin.getListingThrottleMs());
+                long last = lastListingAction.getOrDefault(sellerId, 0L);
+                long remaining = last + minInterval - now;
+                if (remaining > 0) {
+                    // Schedule after remaining delay (convert ms to ticks)
+                    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                        Category cat = Category.categorize(finalItem.getType());
+                        plugin.getListingsManager().addListing(sellerId, finalItem, finalPrice, cat);
+                        lastListingAction.put(sellerId, System.currentTimeMillis());
+                        p.sendMessage(ChatColor.GREEN + "Item listed for " + finalPrice);
+                        ShopMenus.openMain(p);
+                    }, Math.max(1L, remaining / 50L));
+                } else {
+                    lastListingAction.put(sellerId, now);
+                    Category cat = Category.categorize(finalItem.getType());
+                    plugin.getListingsManager().addListing(sellerId, finalItem, finalPrice, cat);
+                    p.sendMessage(ChatColor.GREEN + "Item listed for " + finalPrice);
+                    ShopMenus.openMain(p);
+                }
             });
         } catch (NumberFormatException ex) {
             p.sendMessage(ChatColor.RED + "Invalid number. Type a positive price or 'cancel'.");

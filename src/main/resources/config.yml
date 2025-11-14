@@ -1,282 +1,49 @@
 # EcoShopPro configuration
 
+# Throttle listing-related actions to avoid triggering anticheat for rapid uploads.
+# Value is in milliseconds. Players attempting to list items faster than this interval
+# will have the action delayed to the next safe tick, instead of being blocked.
+listing_throttle_ms: 600
+
 pricing:
   # Base price per unit for each rarity. You can tweak these to change the suggested max price calculation.
   per_rarity_base:
     BASIC: 5.0         # New lowest tier for very common/basic items
-    COMMON: 10.0
+    COMMON: 15.0
     UNCOMMON: 20.0
-    RARE: 600.0
+    RARE: 500.0
     EPIC: 2000.0
-    LEGENDARY: 150000.0  # General top-tier rarity
+    LEGENDARY: 100000.0  # General top-tier rarity
     ELYTRA: 1300000.0     # Elytra-specific rarity (defaults to LEGENDARY value); adjust as desired
-    NETHERITE_BLOCK: 2000.0 # Dedicated rarity for Netherite Block; defaults to EPIC value by default
-    NETHERITE_INGOT: 150000.0 # Dedicated rarity for Netherite Ingot; defaults to LEGENDARY value by default
-    NETHERITE_SCRAP: 2000.0 # Dedicated rarity for Netherite Scrap; defaults to EPIC value by default
+    NETHERITE_BLOCK: 900000.0 # Dedicated rarity for Netherite Block; defaults to EPIC value by default
+    NETHERITE_INGOT: 100000.0 # Dedicated rarity for Netherite Ingot; defaults to LEGENDARY value by default
+    NETHERITE_SCRAP: 25000.0 # Dedicated rarity for Netherite Scrap; defaults to EPIC value by default
+    ANCIENT_DEBRIS: 20000.0 # Dedicated rarity for Ancient Debris; defaults to EPIC value by default
     # If you previously used the misspelled key 'LEGENDARY', it will be migrated automatically on next load.
 
-  # Armor-specific base price per unit for each rarity. If a value is omitted here, it falls back to per_rarity_base.
-  per_rarity_base_armor:
-    BASIC: 5.0
-    COMMON: 10.0
-    UNCOMMON: 20.0
-    RARE: 600.0
-    EPIC: 2000.0
-    LEGENDARY: 150000.0
-    ELYTRA: 1300000.0
-    NETHERITE_BLOCK: 2000.0
-    NETHERITE_INGOT: 150000.0
-    NETHERITE_SCRAP: 2000.0
+
 
   # Optional overrides. You can specify exact per-unit prices under `overrides` by material name.
-  # Additionally, `overrides.Blocks` lets you assign a rarity per natural block category.
-  # And `overrides.Craftables` lets you assign a rarity per craftable item/block.
+  # Categories below are grouped to follow the per_rarity_base sections above.
+  # - Under General (per_rarity_base): Craftables, EnchantmentBooks
+  # - Under Armor (per_rarity_base_armor): Armor items live inside Craftables → Armor subsection
+  # - Under Spawn Eggs (per_rarity_base_spawn_eggs): SpawnEggs subsection
+  # - Under Spawners (per_rarity_base_spawners): Spawners subsection
+  # - Under Blocks (per_rarity_base_blocks): Blocks subsection
+  # - Under Ores (per_rarity_base_ores): Ores subsection
   overrides:
     # Example numeric override (uncomment to use):
     # DIAMOND: 150.0
     # DIRT: 1.0
 
-    Blocks:
-      # Base blocks
-      DEEPSLATE: common
-      STONE: common
-      DIRT: common
-      GRASS_BLOCK: common
-      COARSE_DIRT: common
-      MUD: common
-      SAND: common
-      RED_SAND: common
-      GRAVEL: common
-
-      # Ores
-      COAL_ORE: common
-      DEEPSLATE_COAL_ORE: common
-      IRON_ORE: common
-      DEEPSLATE_IRON_ORE: common
-      COPPER_ORE: common
-      DEEPSLATE_COPPER_ORE: common
-      GOLD_ORE: common
-      DEEPSLATE_GOLD_ORE: common
-      REDSTONE_ORE: common
-      DEEPSLATE_REDSTONE_ORE: common
-      LAPIS_ORE: common
-      DEEPSLATE_LAPIS_ORE: common
-      EMERALD_ORE: common
-      DEEPSLATE_EMERALD_ORE: common
-      DIAMOND_ORE: common
-      DEEPSLATE_DIAMOND_ORE: common
-      COAL: basic
-      RAW_IRON: common
-      IRON_INGOT: uncommon
-      RAW_COPPER: basic
-      COPPER_INGOT: common
-      RAW_GOLD: uncommon
-      GOLD_INGOT: uncommon
-      REDSTONE: common
-      LAPIS_LAZULI: uncommon
-      DIAMOND: rare
-      EMERALD: rare
-      QUARTZ: common
-      AMETHYST_SHARD: uncommon
-      NETHERITE_SCRAP: NETHERITE_SCRAP
-      NETHERITE_INGOT: NETHERITE_INGOT
-      
-      # Natural wood - Overworld logs and woods
-      OAK_LOG: common
-      OAK_WOOD: common
-      PALE_OAK_LOG: common
-      PALE_OAK_WOOD: common
-      SPRUCE_LOG: common
-      SPRUCE_WOOD: common
-      BIRCH_LOG: common
-      BIRCH_WOOD: common
-      JUNGLE_LOG: common
-      JUNGLE_WOOD: common
-      ACACIA_LOG: common
-      ACACIA_WOOD: common
-      DARK_OAK_LOG: common
-      DARK_OAK_WOOD: common
-      MANGROVE_LOG: common
-      MANGROVE_WOOD: common
-      CHERRY_LOG: common
-      CHERRY_WOOD: common
-
-      # Overworld stones and cave blocks
-      ANDESITE: common
-      DIORITE: common
-      GRANITE: common
-      TUFF: common
-      CALCITE: common
-      SMOOTH_BASALT: common
-      CLAY: common
-      ROOTED_DIRT: common
-      MOSS_BLOCK: common
-      MOSS_CARPET: common
-      DRIPSTONE_BLOCK: common
-      POINTED_DRIPSTONE: common
-      GLOW_LICHEN: common
-
-      # Geodes
-      AMETHYST_BLOCK: common
-      BUDDING_AMETHYST: common
-      AMETHYST_CLUSTER: common
-      SMALL_AMETHYST_BUD: common
-      MEDIUM_AMETHYST_BUD: common
-      LARGE_AMETHYST_BUD: common
-
-      # Snow and ice
-      SNOW: common
-      SNOW_BLOCK: common
-      POWDER_SNOW: common
-      ICE: common
-      PACKED_ICE: common
-      BLUE_ICE: common
-
-      # Vegetation (Overworld)
-      VINE: common
-      LILY_PAD: common
-      SUGAR_CANE: common
-      CACTUS: common
-      BAMBOO: common
-      SWEET_BERRY_BUSH: common
-      SEAGRASS: common
-      TALL_SEAGRASS: common
-      KELP: common
-      KELP_PLANT: common
-      SEA_PICKLE: common
-      LILY_OF_THE_VALLEY: common
-      DANDELION: common
-      POPPY: common
-      BLUE_ORCHID: common
-      ALLIUM: common
-      AZURE_BLUET: common
-      RED_TULIP: common
-      ORANGE_TULIP: common
-      WHITE_TULIP: common
-      PINK_TULIP: common
-      OXEYE_DAISY: common
-      CORNFLOWER: common
-      SUNFLOWER: common
-      LILAC: common
-      ROSE_BUSH: common
-      PEONY: common
-      GRASS: common
-      TALL_GRASS: common
-      FERN: common
-      LARGE_FERN: common
-      AZALEA: common
-      FLOWERING_AZALEA: common
-      AZALEA_LEAVES: common
-      FLOWERING_AZALEA_LEAVES: common
-      SPORE_BLOSSOM: common
-      HANGING_ROOTS: common
-      BIG_DRIPLEAF: common
-      SMALL_DRIPLEAF: common
-      CAVE_VINES: common
-      CAVE_VINES_PLANT: common
-      GLOW_BERRIES: common
-
-      # Tree leaves and roots (Overworld)
-      OAK_LEAVES: common
-      PALE_OAK_LEAVES: common
-      SPRUCE_LEAVES: common
-      BIRCH_LEAVES: common
-      JUNGLE_LEAVES: common
-      ACACIA_LEAVES: common
-      DARK_OAK_LEAVES: common
-      MANGROVE_LEAVES: common
-      CHERRY_LEAVES: common
-      MANGROVE_ROOTS: common
-      MUDDY_MANGROVE_ROOTS: common
-
-      # Sculk (found in Overworld deep dark)
-      SCULK: common
-      SCULK_VEIN: common
-      SCULK_CATALYST: common
-      SCULK_SHRIEKER: common
-      SCULK_SENSOR: common
-
-      # Mushrooms
-      BROWN_MUSHROOM: common
-      RED_MUSHROOM: common
-      MUSHROOM_STEM: common
-      BROWN_MUSHROOM_BLOCK: common
-      RED_MUSHROOM_BLOCK: common
-
-      # Overworld terrain and misc
-      PODZOL: common
-      MYCELIUM: common
-      DIRT_PATH: common
-      SANDSTONE: common
-      RED_SANDSTONE: common
-      COBBLESTONE: common
-      MOSSY_COBBLESTONE: common
-      COBWEB: common
-      DEAD_BUSH: common
-      PUMPKIN: common
-      MELON: common
-      CARVED_PUMPKIN: common
-      JACK_O_LANTERN: common
-      SPONGE: common
-      WET_SPONGE: common
-
-      # Terracotta (Overworld natural in badlands)
-      TERRACOTTA: common
-      WHITE_TERRACOTTA: common
-      ORANGE_TERRACOTTA: common
-      MAGENTA_TERRACOTTA: common
-      LIGHT_BLUE_TERRACOTTA: common
-      YELLOW_TERRACOTTA: common
-      LIME_TERRACOTTA: common
-      PINK_TERRACOTTA: common
-      GRAY_TERRACOTTA: common
-      LIGHT_GRAY_TERRACOTTA: common
-      CYAN_TERRACOTTA: common
-      PURPLE_TERRACOTTA: common
-      BLUE_TERRACOTTA: common
-      BROWN_TERRACOTTA: common
-      GREEN_TERRACOTTA: common
-      RED_TERRACOTTA: common
-      BLACK_TERRACOTTA: common
-
-      # Ores - Nether
-      NETHER_QUARTZ_ORE: common
-      NETHER_GOLD_ORE: common
-      ANCIENT_DEBRIS: common
-
-      # Nether Blocks (natural terrain/vegetation)
-      NETHERRACK: common
-      BASALT: common
-      BLACKSTONE: common
-      GILDED_BLACKSTONE: common
-      SOUL_SAND: common
-      SOUL_SOIL: common
-      MAGMA_BLOCK: common
-      CRIMSON_NYLIUM: common
-      WARPED_NYLIUM: common
-      GLOWSTONE: common
-      NETHER_WART_BLOCK: common
-      WARPED_WART_BLOCK: common
-      SHROOMLIGHT: common
-      CRIMSON_ROOTS: common
-      WARPED_ROOTS: common
-      NETHER_SPROUTS: common
-      WEEPING_VINES: common
-      TWISTING_VINES: common
-
-      # Natural wood - Nether stems and hyphae
-      CRIMSON_STEM: common
-      CRIMSON_HYPHAE: common
-      WARPED_STEM: common
-      WARPED_HYPHAE: common
-
-      # End Blocks (natural terrain)
-      END_STONE: common
-
+    # General (uses pricing.per_rarity_base unless otherwise noted)
+    # Craftables: items and blocks crafted by players.
+    # Armor entries here will use pricing.per_rarity_base_armor; craftable blocks will use pricing.per_rarity_base_blocks;
+    # non-block, non-armor items will use pricing.per_rarity_base.
     Craftables:
       # Workstations and storage
-      CRAFTING_TABLE: common
-      FURNACE: common
+      CRAFTING_TABLE: basic
+      FURNACE: basic
       BLAST_FURNACE: uncommon
       SMOKER: common
       ANVIL: uncommon
@@ -304,13 +71,15 @@ pricing:
       DROPPER: common
       DISPENSER: common
       OBSERVER: uncommon
-      DAYLIGHT_DETECTOR: common
+      DAYLIGHT_DETECTOR: uncommon
       LIGHTNING_ROD: common
 
       # Redstone components
       LEVER: common
       STONE_BUTTON: common
       STONE_PRESSURE_PLATE: common
+      HEAVY_WEIGHTED_PRESSURE_PLATE: uncommon  # Iron pressure plate
+      LIGHT_WEIGHTED_PRESSURE_PLATE: uncommon  # Gold pressure plate
       REDSTONE_TORCH: common
       REDSTONE_REPEATER: common
       REDSTONE_COMPARATOR: uncommon
@@ -319,35 +88,43 @@ pricing:
       TRIPWIRE_HOOK: common
       TARGET: common
       CALIBRATED_SCULK_SENSOR: uncommon
+      COPPER_BULB: uncommon
+      EXPOSED_COPPER_BULB: uncommon
+      WEATHERED_COPPER_BULB: uncommon
+      OXIDIZED_COPPER_BULB: uncommon
+      WAXED_COPPER_BULB: rare
+      WAXED_EXPOSED_COPPER_BULB: rare
+      WAXED_WEATHERED_COPPER_BULB: rare
+      WAXED_OXIDIZED_COPPER_BULB: rare
 
       # Lighting
-      TORCH: common
-      SOUL_TORCH: common
-      LANTERN: uncommon
-      SOUL_LANTERN: uncommon
-      REDSTONE_LAMP: uncommon
-      SEA_LANTERN: uncommon
+      TORCH: basic
+      SOUL_TORCH: basic
+      LANTERN: common
+      SOUL_LANTERN: common
+      REDSTONE_LAMP: common
+      SEA_LANTERN: common
       JACK_O_LANTERN: common
-      END_ROD: uncommon
+      END_ROD: basic
       CAMPFIRE: common
       SOUL_CAMPFIRE: common
-      CANDLE: common
-      WHITE_CANDLE: common
-      ORANGE_CANDLE: common
-      MAGENTA_CANDLE: common
-      LIGHT_BLUE_CANDLE: common
-      YELLOW_CANDLE: common
-      LIME_CANDLE: common
-      PINK_CANDLE: common
-      GRAY_CANDLE: common
-      LIGHT_GRAY_CANDLE: common
-      CYAN_CANDLE: common
-      PURPLE_CANDLE: common
-      BLUE_CANDLE: common
-      BROWN_CANDLE: common
-      GREEN_CANDLE: common
-      RED_CANDLE: common
-      BLACK_CANDLE: common
+      CANDLE: basic
+      WHITE_CANDLE: basic
+      ORANGE_CANDLE: basic
+      MAGENTA_CANDLE: basic
+      LIGHT_BLUE_CANDLE: basic
+      YELLOW_CANDLE: basic
+      LIME_CANDLE: basic
+      PINK_CANDLE: basic
+      GRAY_CANDLE: basic
+      LIGHT_GRAY_CANDLE: basic
+      CYAN_CANDLE: basic
+      PURPLE_CANDLE: basic
+      BLUE_CANDLE: basic
+      BROWN_CANDLE: basic
+      GREEN_CANDLE: basic
+      RED_CANDLE: basic
+      BLACK_CANDLE: basic
       # Copper lanterns and torches (1.21.9)
       COPPER_TORCH: common
       EXPOSED_COPPER_TORCH: common
@@ -357,14 +134,14 @@ pricing:
       WAXED_EXPOSED_COPPER_TORCH: common
       WAXED_WEATHERED_COPPER_TORCH: common
       WAXED_OXIDIZED_COPPER_TORCH: common
-      COPPER_LANTERN: uncommon
-      EXPOSED_COPPER_LANTERN: uncommon
-      WEATHERED_COPPER_LANTERN: uncommon
-      OXIDIZED_COPPER_LANTERN: uncommon
-      WAXED_COPPER_LANTERN: uncommon
-      WAXED_EXPOSED_COPPER_LANTERN: uncommon
-      WAXED_WEATHERED_COPPER_LANTERN: uncommon
-      WAXED_OXIDIZED_COPPER_LANTERN: uncommon
+      COPPER_LANTERN: common
+      EXPOSED_COPPER_LANTERN: common
+      WEATHERED_COPPER_LANTERN: common
+      OXIDIZED_COPPER_LANTERN: common
+      WAXED_COPPER_LANTERN: common
+      WAXED_EXPOSED_COPPER_LANTERN: common
+      WAXED_WEATHERED_COPPER_LANTERN: common
+      WAXED_OXIDIZED_COPPER_LANTERN: common
 
       # Transportation
       MINECART: common
@@ -375,8 +152,8 @@ pricing:
       COMMAND_BLOCK_MINECART: rare
       RAIL: common
       POWERED_RAIL: uncommon
-      DETECTOR_RAIL: uncommon
-      ACTIVATOR_RAIL: uncommon
+      DETECTOR_RAIL: common
+      ACTIVATOR_RAIL: common
       OAK_BOAT: common
       SPRUCE_BOAT: common
       BIRCH_BOAT: common
@@ -403,316 +180,77 @@ pricing:
       GLASS_BOTTLE: common
       PAPER: common
       BOOK: common
-      MAP: uncommon
-      COMPASS: uncommon
-      CLOCK: uncommon
-      SPYGLASS: uncommon
-      BRICK: common
-      NETHER_BRICK: common
+      MAP: common
+      COMPASS: common
+      CLOCK: common
+      SPYGLASS: common
+      BRICK: basic
+      NETHER_BRICK: basic
       FIREWORK_ROCKET: common
       FIREWORK_STAR: common
+      ARROW: common
+      SPECTRAL_ARROW: common
+      TIPPED_ARROW: common
       ARMOR_STAND: common
       FLOWER_POT: common
       ITEM_FRAME: common
       PAINTING: common
       LEAD: common
       BONE_BLOCK: common
-      TINTED_GLASS: uncommon
+      TINTED_GLASS: common
+      NETHER_WART: common
       NETHER_STAR: legendary
-      HEAVY_CORE: legendary
+      HEAVY_CORE: elytra
       TRIAL_KEY: rare
       OMINOUS_TRIAL_KEY: epic
-      CREAKING_HEART: epic
-      RESIN: uncommon
+      CREAKING_HEART: uncommon
+      RESIN: basic
       DRIED_GHASTLING: rare
-      OMINOUS_BOTTLE: epic
-      DRAGON_EGG: legendary
+      OMINOUS_BOTTLE: uncommon
+      DRAGON_EGG: elytra
+      ANGLER_POTTERY_SHERD: common
+      ARCHER_POTTERY_SHERD: common
+      ARMS_UP_POTTERY_SHERD: common
+      BLADE_POTTERY_SHERD: common
+      BREWER_POTTERY_SHERD: common
+      BURN_POTTERY_SHERD: common
+      DANGER_POTTERY_SHERD: common
+      EXPLORER_POTTERY_SHERD: common
+      FRIEND_POTTERY_SHERD: common
+      GUSTER_POTTERY_SHERD: common
+      HEART_POTTERY_SHERD: common
+      HEARTBREAK_POTTERY_SHERD: common
+      HOWL_POTTERY_SHERD: common
+      MINER_POTTERY_SHERD: common
+      MOURNER_POTTERY_SHERD: common
+      PLENTY_POTTERY_SHERD: common
+      PRIZE_POTTERY_SHERD: common
+      SCRAPE_POTTERY_SHERD: common
+      SHEAF_POTTERY_SHERD: common
+      SHELTER_POTTERY_SHERD: common
+      SKULL_POTTERY_SHERD: common
+      SNORT_POTTERY_SHERD: common
+      SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE: uncommon
+      DUNE_ARMOR_TRIM_SMITHING_TEMPLATE: uncommon
+      COAST_ARMOR_TRIM_SMITHING_TEMPLATE: uncommon
+      WILD_ARMOR_TRIM_SMITHING_TEMPLATE: uncommon
+      WARD_ARMOR_TRIM_SMITHING_TEMPLATE: uncommon
+      EYE_ARMOR_TRIM_SMITHING_TEMPLATE: uncommon
+      VEX_ARMOR_TRIM_SMITHING_TEMPLATE: uncommon
+      TIDE_ARMOR_TRIM_SMITHING_TEMPLATE: uncommon
+      SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE: uncommon
+      RIB_ARMOR_TRIM_SMITHING_TEMPLATE: uncommon
+      SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE: uncommon
+      WAYFINDER_ARMOR_TRIM_SMITHING_TEMPLATE: uncommon
+      SHAPER_ARMOR_TRIM_SMITHING_TEMPLATE: uncommon
+      SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE: uncommon
+      RAISER_ARMOR_TRIM_SMITHING_TEMPLATE: uncommon
+      HOST_ARMOR_TRIM_SMITHING_TEMPLATE: uncommon
+      FLOW_ARMOR_TRIM_SMITHING_TEMPLATE: uncommon
+      BOLT_ARMOR_TRIM_SMITHING_TEMPLATE: uncommon
+      NETHERITE_UPGRADE_SMITHING_TEMPLATE: uncommon
 
-      # Stone and variants (craftable)
-      STONE: common
-      STONE_SLAB: common
-      STONE_STAIRS: common
-      STONE_BRICKS: common
-      STONE_BRICK_SLAB: common
-      STONE_BRICK_STAIRS: common
-      CHISELED_STONE_BRICKS: common
-      CRACKED_STONE_BRICKS: common
-      MOSSY_STONE_BRICKS: common
-      MOSSY_STONE_BRICK_SLAB: common
-      MOSSY_STONE_BRICK_STAIRS: common
-      COBBLESTONE: common
-      COBBLESTONE_SLAB: common
-      COBBLESTONE_STAIRS: common
-      MOSSY_COBBLESTONE: common
-      MOSSY_COBBLESTONE_SLAB: common
-      MOSSY_COBBLESTONE_STAIRS: common
-      ANDESITE: common
-      ANDESITE_SLAB: common
-      ANDESITE_STAIRS: common
-      DIORITE: common
-      DIORITE_SLAB: common
-      DIORITE_STAIRS: common
-      GRANITE: common
-      GRANITE_SLAB: common
-      GRANITE_STAIRS: common
-      TUFF: common
-      TUFF_SLAB: common
-      TUFF_STAIRS: common
-      POLISHED_ANDESITE: common
-      POLISHED_ANDESITE_SLAB: common
-      POLISHED_ANDESITE_STAIRS: common
-      POLISHED_DIORITE: common
-      POLISHED_DIORITE_SLAB: common
-      POLISHED_DIORITE_STAIRS: common
-      POLISHED_GRANITE: common
-      POLISHED_GRANITE_SLAB: common
-      POLISHED_GRANITE_STAIRS: common
-      POLISHED_TUFF: common
-      POLISHED_TUFF_SLAB: common
-      POLISHED_TUFF_STAIRS: common
-      CHISELED_TUFF: common
-      TUFF_BRICKS: common
-      TUFF_BRICK_SLAB: common
-      TUFF_BRICK_STAIRS: common
-      CHISELED_TUFF_BRICKS: common
 
-      # Resin blocks
-      RESIN_BLOCK: uncommon
-      RESIN_BRICKS: uncommon
-      RESIN_BRICK_SLAB: uncommon
-      RESIN_BRICK_STAIRS: uncommon
-      CHISELED_RESIN_BRICKS: uncommon
-      RESIN_BRICK_WALL: uncommon
-
-      # Deepslate and bricks
-      COBBLED_DEEPSLATE: common
-      COBBLED_DEEPSLATE_SLAB: common
-      COBBLED_DEEPSLATE_STAIRS: common
-      DEEPSLATE_TILES: common
-      DEEPSLATE_TILE_SLAB: common
-      DEEPSLATE_TILE_STAIRS: common
-      DEEPSLATE_BRICKS: common
-      DEEPSLATE_BRICK_SLAB: common
-      DEEPSLATE_BRICK_STAIRS: common
-      CHISELED_DEEPSLATE: common
-      POLISHED_DEEPSLATE: common
-      POLISHED_DEEPSLATE_SLAB: common
-      POLISHED_DEEPSLATE_STAIRS: common
-
-      # Sandstone and red sandstone
-      SANDSTONE: common
-      SANDSTONE_SLAB: common
-      SANDSTONE_STAIRS: common
-      CHISELED_SANDSTONE: common
-      CUT_SANDSTONE: common
-      CUT_SANDSTONE_SLAB: common
-      RED_SANDSTONE: common
-      RED_SANDSTONE_SLAB: common
-      RED_SANDSTONE_STAIRS: common
-      CHISELED_RED_SANDSTONE: common
-      CUT_RED_SANDSTONE: common
-      CUT_RED_SANDSTONE_SLAB: common
-
-      # Quartz
-      QUARTZ_BLOCK: common
-      QUARTZ_SLAB: common
-      QUARTZ_STAIRS: common
-      CHISELED_QUARTZ_BLOCK: common
-      QUARTZ_PILLAR: common
-      SMOOTH_QUARTZ: common
-      SMOOTH_QUARTZ_SLAB: common
-      SMOOTH_QUARTZ_STAIRS: common
-
-      # Bricks and terracotta and concrete
-      BRICKS: common
-      BRICK_SLAB: common
-      BRICK_STAIRS: common
-      TERRACOTTA: common
-      WHITE_TERRACOTTA: common
-      ORANGE_TERRACOTTA: common
-      MAGENTA_TERRACOTTA: common
-      LIGHT_BLUE_TERRACOTTA: common
-      YELLOW_TERRACOTTA: common
-      LIME_TERRACOTTA: common
-      PINK_TERRACOTTA: common
-      GRAY_TERRACOTTA: common
-      LIGHT_GRAY_TERRACOTTA: common
-      CYAN_TERRACOTTA: common
-      PURPLE_TERRACOTTA: common
-      BLUE_TERRACOTTA: common
-      BROWN_TERRACOTTA: common
-      GREEN_TERRACOTTA: common
-      RED_TERRACOTTA: common
-      BLACK_TERRACOTTA: common
-      GLAZED_TERRACOTTA: common
-      WHITE_CONCRETE_POWDER: common
-      ORANGE_CONCRETE_POWDER: common
-      MAGENTA_CONCRETE_POWDER: common
-      LIGHT_BLUE_CONCRETE_POWDER: common
-      YELLOW_CONCRETE_POWDER: common
-      LIME_CONCRETE_POWDER: common
-      PINK_CONCRETE_POWDER: common
-      GRAY_CONCRETE_POWDER: common
-      LIGHT_GRAY_CONCRETE_POWDER: common
-      CYAN_CONCRETE_POWDER: common
-      PURPLE_CONCRETE_POWDER: common
-      BLUE_CONCRETE_POWDER: common
-      BROWN_CONCRETE_POWDER: common
-      GREEN_CONCRETE_POWDER: common
-      RED_CONCRETE_POWDER: common
-      BLACK_CONCRETE_POWDER: common
-
-      # Glass and panes
-      GLASS: common
-      GLASS_PANE: common
-      WHITE_STAINED_GLASS: common
-      ORANGE_STAINED_GLASS: common
-      MAGENTA_STAINED_GLASS: common
-      LIGHT_BLUE_STAINED_GLASS: common
-      YELLOW_STAINED_GLASS: common
-      LIME_STAINED_GLASS: common
-      PINK_STAINED_GLASS: common
-      GRAY_STAINED_GLASS: common
-      LIGHT_GRAY_STAINED_GLASS: common
-      CYAN_STAINED_GLASS: common
-      PURPLE_STAINED_GLASS: common
-      BLUE_STAINED_GLASS: common
-      BROWN_STAINED_GLASS: common
-      GREEN_STAINED_GLASS: common
-      RED_STAINED_GLASS: common
-      BLACK_STAINED_GLASS: common
-      WHITE_STAINED_GLASS_PANE: common
-      ORANGE_STAINED_GLASS_PANE: common
-      MAGENTA_STAINED_GLASS_PANE: common
-      LIGHT_BLUE_STAINED_GLASS_PANE: common
-      YELLOW_STAINED_GLASS_PANE: common
-      LIME_STAINED_GLASS_PANE: common
-      PINK_STAINED_GLASS_PANE: common
-      GRAY_STAINED_GLASS_PANE: common
-      LIGHT_GRAY_STAINED_GLASS_PANE: common
-      CYAN_STAINED_GLASS_PANE: common
-      PURPLE_STAINED_GLASS_PANE: common
-      BLUE_STAINED_GLASS_PANE: common
-      BROWN_STAINED_GLASS_PANE: common
-      GREEN_STAINED_GLASS_PANE: common
-      RED_STAINED_GLASS_PANE: common
-      BLACK_STAINED_GLASS_PANE: common
-
-      # Wood sets (representative examples; all variants follow similar naming)
-      OAK_PLANKS: common
-      OAK_STAIRS: common
-      OAK_SLAB: common
-      OAK_FENCE: common
-      OAK_FENCE_GATE: common
-      OAK_DOOR: common
-      OAK_TRAPDOOR: common
-      OAK_SIGN: common
-      OAK_HANGING_SIGN: common
-      OAK_PRESSURE_PLATE: common
-      OAK_BUTTON: common
-      OAK_SHELF: common
-      SPRUCE_PLANKS: common
-      SPRUCE_STAIRS: common
-      SPRUCE_SLAB: common
-      SPRUCE_FENCE: common
-      SPRUCE_FENCE_GATE: common
-      SPRUCE_DOOR: common
-      SPRUCE_TRAPDOOR: common
-      SPRUCE_SIGN: common
-      SPRUCE_HANGING_SIGN: common
-      SPRUCE_PRESSURE_PLATE: common
-      SPRUCE_BUTTON: common
-      SPRUCE_SHELF: common
-      BIRCH_PLANKS: common
-      BIRCH_STAIRS: common
-      BIRCH_SLAB: common
-      BIRCH_FENCE: common
-      BIRCH_FENCE_GATE: common
-      BIRCH_DOOR: common
-      BIRCH_TRAPDOOR: common
-      BIRCH_SIGN: common
-      BIRCH_HANGING_SIGN: common
-      BIRCH_PRESSURE_PLATE: common
-      BIRCH_BUTTON: common
-      BIRCH_SHELF: common
-      JUNGLE_PLANKS: common
-      JUNGLE_STAIRS: common
-      JUNGLE_SLAB: common
-      JUNGLE_FENCE: common
-      JUNGLE_FENCE_GATE: common
-      JUNGLE_DOOR: common
-      JUNGLE_TRAPDOOR: common
-      JUNGLE_SIGN: common
-      JUNGLE_HANGING_SIGN: common
-      JUNGLE_PRESSURE_PLATE: common
-      JUNGLE_BUTTON: common
-      JUNGLE_SHELF: common
-      ACACIA_PLANKS: common
-      ACACIA_STAIRS: common
-      ACACIA_SLAB: common
-      ACACIA_FENCE: common
-      ACACIA_FENCE_GATE: common
-      ACACIA_DOOR: common
-      ACACIA_TRAPDOOR: common
-      ACACIA_SIGN: common
-      ACACIA_HANGING_SIGN: common
-      ACACIA_PRESSURE_PLATE: common
-      ACACIA_BUTTON: common
-      ACACIA_SHELF: common
-      DARK_OAK_PLANKS: common
-      DARK_OAK_STAIRS: common
-      DARK_OAK_SLAB: common
-      DARK_OAK_FENCE: common
-      DARK_OAK_FENCE_GATE: common
-      DARK_OAK_DOOR: common
-      DARK_OAK_TRAPDOOR: common
-      DARK_OAK_SIGN: common
-      DARK_OAK_HANGING_SIGN: common
-      DARK_OAK_PRESSURE_PLATE: common
-      DARK_OAK_BUTTON: common
-      DARK_OAK_SHELF: common
-      MANGROVE_PLANKS: common
-      MANGROVE_STAIRS: common
-      MANGROVE_SLAB: common
-      MANGROVE_FENCE: common
-      MANGROVE_FENCE_GATE: common
-      MANGROVE_DOOR: common
-      MANGROVE_TRAPDOOR: common
-      MANGROVE_SIGN: common
-      MANGROVE_HANGING_SIGN: common
-      MANGROVE_PRESSURE_PLATE: common
-      MANGROVE_BUTTON: common
-      MANGROVE_SHELF: common
-      CHERRY_PLANKS: common
-      CHERRY_STAIRS: common
-      CHERRY_SLAB: common
-      CHERRY_FENCE: common
-      CHERRY_FENCE_GATE: common
-      CHERRY_DOOR: common
-      CHERRY_TRAPDOOR: common
-      CHERRY_SIGN: common
-      CHERRY_HANGING_SIGN: common
-      CHERRY_PRESSURE_PLATE: common
-      CHERRY_BUTTON: common
-      CHERRY_SHELF: common
-      PALE_OAK_PLANKS: common
-      PALE_OAK_STAIRS: common
-      PALE_OAK_SLAB: common
-      PALE_OAK_FENCE: common
-      PALE_OAK_FENCE_GATE: common
-      PALE_OAK_DOOR: common
-      PALE_OAK_TRAPDOOR: common
-      PALE_OAK_SIGN: common
-      PALE_OAK_HANGING_SIGN: common
-      PALE_OAK_PRESSURE_PLATE: common
-      PALE_OAK_BUTTON: common
-      PALE_OAK_SHELF: common
-      # Additional wood-family shelves not listed above
-      BAMBOO_SHELF: common
-      CRIMSON_SHELF: common
-      WARPED_SHELF: common
-
-      # Wool and beds (examples; color variants analogous)
       WHITE_WOOL: common
       ORANGE_WOOL: common
       MAGENTA_WOOL: common
@@ -730,21 +268,21 @@ pricing:
       RED_WOOL: common
       BLACK_WOOL: common
       WHITE_BED: common
-      ORANGE_BED: common
-      MAGENTA_BED: common
-      LIGHT_BLUE_BED: common
-      YELLOW_BED: common
-      LIME_BED: common
-      PINK_BED: common
-      GRAY_BED: common
-      LIGHT_GRAY_BED: common
-      CYAN_BED: common
-      PURPLE_BED: common
-      BLUE_BED: common
-      BROWN_BED: common
-      GREEN_BED: common
-      RED_BED: common
-      BLACK_BED: common
+      ORANGE_BED: basic
+      MAGENTA_BED: basic
+      LIGHT_BLUE_BED: basic
+      YELLOW_BED: basic
+      LIME_BED: basic
+      PINK_BED: basic
+      GRAY_BED: basic
+      LIGHT_GRAY_BED: basic
+      CYAN_BED: basic
+      PURPLE_BED: basic
+      BLUE_BED: basic
+      BROWN_BED: basic
+      GREEN_BED: basic
+      RED_BED: basic
+      BLACK_BED: basic
 
       # Banners and patterns
       WHITE_BANNER: common
@@ -763,29 +301,29 @@ pricing:
       GREEN_BANNER: common
       RED_BANNER: common
       BLACK_BANNER: common
-      FLOW_BANNER_PATTERN: uncommon
-      GLOBE_BANNER_PATTERN: uncommon
-      CREEPER_BANNER_PATTERN: uncommon
-      SKULL_BANNER_PATTERN: uncommon
-      MOJANG_BANNER_PATTERN: uncommon
-      PIGLIN_BANNER_PATTERN: uncommon
+      FLOW_BANNER_PATTERN: common
+      GLOBE_BANNER_PATTERN: common
+      CREEPER_BANNER_PATTERN: common
+      SKULL_BANNER_PATTERN: common
+      MOJANG_BANNER_PATTERN: common
+      PIGLIN_BANNER_PATTERN: common
 
       # Tools and equipment (expanded)
-      WOODEN_SWORD: common
-      WOODEN_PICKAXE: common
-      WOODEN_AXE: common
-      WOODEN_SHOVEL: common
-      WOODEN_HOE: common
+      WOODEN_SWORD: basic
+      WOODEN_PICKAXE: basic
+      WOODEN_AXE: basic
+      WOODEN_SHOVEL: basic
+      WOODEN_HOE: basic
       STONE_SWORD: common
       STONE_PICKAXE: common
       STONE_AXE: common
       STONE_SHOVEL: common
       STONE_HOE: common
-      IRON_SWORD: common
-      IRON_PICKAXE: common
-      IRON_AXE: common
-      IRON_SHOVEL: common
-      IRON_HOE: common
+      IRON_SWORD: uncommon
+      IRON_PICKAXE: uncommon
+      IRON_AXE: uncommon
+      IRON_SHOVEL: uncommon
+      IRON_HOE: uncommon
       COPPER_SWORD: uncommon
       COPPER_PICKAXE: uncommon
       COPPER_AXE: uncommon
@@ -806,9 +344,9 @@ pricing:
       NETHERITE_AXE: legendary
       NETHERITE_SHOVEL: legendary
       NETHERITE_HOE: legendary
-      SHEARS: common
-      FLINT_AND_STEEL: common
-      FISHING_ROD: common
+      SHEARS: basic
+      FLINT_AND_STEEL: basic
+      FISHING_ROD: basic
       BOW: common
       CROSSBOW: uncommon
       SHIELD: common
@@ -817,31 +355,41 @@ pricing:
       BRUSH: common
       MACE: legendary
 
+      # Armor-specific base price per unit for each rarity. Applies to Armor below.
+      per_rarity_base_armor:
+        BASIC: 10.0
+        COMMON: 30.0
+        UNCOMMON: 60.0
+        RARE: 80.0
+        EPIC: 2000.0
+        LEGENDARY: 120000.0
+        MYTHIC: 300000.0
+
       # Armor
-      LEATHER_HELMET: common
-      LEATHER_CHESTPLATE: common
-      LEATHER_LEGGINGS: common
-      LEATHER_BOOTS: common
+      LEATHER_HELMET: basic
+      LEATHER_CHESTPLATE: basic
+      LEATHER_LEGGINGS: basic
+      LEATHER_BOOTS: basic
       CHAINMAIL_HELMET: uncommon
       CHAINMAIL_CHESTPLATE: uncommon
       CHAINMAIL_LEGGINGS: uncommon
       CHAINMAIL_BOOTS: uncommon
-      IRON_HELMET: uncommon
-      IRON_CHESTPLATE: uncommon
-      IRON_LEGGINGS: uncommon
-      IRON_BOOTS: uncommon
-      GOLDEN_HELMET: uncommon
-      GOLDEN_CHESTPLATE: uncommon
-      GOLDEN_LEGGINGS: uncommon
-      GOLDEN_BOOTS: uncommon
-      COPPER_HELMET: uncommon
-      COPPER_CHESTPLATE: uncommon
-      COPPER_LEGGINGS: uncommon
-      COPPER_BOOTS: uncommon
-      DIAMOND_HELMET: rare
-      DIAMOND_CHESTPLATE: rare
-      DIAMOND_LEGGINGS: rare
-      DIAMOND_BOOTS: rare
+      IRON_HELMET: common
+      IRON_CHESTPLATE: common
+      IRON_LEGGINGS: common
+      IRON_BOOTS: common
+      GOLDEN_HELMET: rare
+      GOLDEN_CHESTPLATE: rare
+      GOLDEN_LEGGINGS: rare
+      GOLDEN_BOOTS: rare
+      COPPER_HELMET: common
+      COPPER_CHESTPLATE: common
+      COPPER_LEGGINGS: common
+      COPPER_BOOTS: common
+      DIAMOND_HELMET: epic
+      DIAMOND_CHESTPLATE: epic
+      DIAMOND_LEGGINGS: epic
+      DIAMOND_BOOTS: epic
       NETHERITE_HELMET: legendary
       NETHERITE_CHESTPLATE: legendary
       NETHERITE_LEGGINGS: legendary
@@ -849,62 +397,62 @@ pricing:
       TURTLE_HELMET: uncommon
 
       # Food and consumables (all edible items)
-      APPLE: common
-      BAKED_POTATO: common
-      BEETROOT: common
-      BEETROOT_SOUP: common
-      BEEF: common
-      BREAD: common
-      CAKE: uncommon
-      CARROT: common
-      CHICKEN: common
-      CHORUS_FRUIT: uncommon
-      COD: common
-      COOKED_BEEF: common
-      COOKED_CHICKEN: common
-      COOKED_COD: common
-      COOKED_MUTTON: common
-      COOKED_PORKCHOP: common
-      COOKED_RABBIT: common
-      COOKED_SALMON: common
-      COOKIE: common
-      DRIED_KELP: common
-      ENCHANTED_GOLDEN_APPLE: epic
-      GLOW_BERRIES: common
+      APPLE: basic
+      BAKED_POTATO: basic
+      BEETROOT: basic
+      BEETROOT_SOUP: basic
+      BEEF: basic
+      BREAD: basic
+      CAKE: common
+      CARROT: basic
+      CHICKEN: basic
+      CHORUS_FRUIT: basic
+      COD: basic
+      COOKED_BEEF: basic
+      COOKED_CHICKEN: basic
+      COOKED_COD: basic
+      COOKED_MUTTON: basic
+      COOKED_PORKCHOP: basic
+      COOKED_RABBIT: basic
+      COOKED_SALMON: basic
+      COOKIE: basic
+      DRIED_KELP: basic
+      ENCHANTED_GOLDEN_APPLE: legendary
+      GLOW_BERRIES: basic
       GOLDEN_APPLE: rare
-      GOLDEN_CARROT: uncommon
-      HONEY_BOTTLE: common
-      MELON_SLICE: common
-      MILK_BUCKET: common
-      MUSHROOM_STEW: common
-      MUTTON: common
-      POISONOUS_POTATO: common
-      PORKCHOP: common
-      POTATO: common
-      PUFFERFISH: uncommon
+      GOLDEN_CARROT: common
+      HONEY_BOTTLE: basic
+      MELON_SLICE: basic
+      MILK_BUCKET: basic
+      MUSHROOM_STEW: basic
+      MUTTON: basic
+      POISONOUS_POTATO: basic
+      PORKCHOP: basic
+      POTATO: basic
+      PUFFERFISH: basic
       PUMPKIN_PIE: common
-      RABBIT: common
-      RABBIT_STEW: common
-      ROTTEN_FLESH: common
-      SALMON: common
-      SPIDER_EYE: common
-      SUSPICIOUS_STEW: uncommon
-      SWEET_BERRIES: common
-      TROPICAL_FISH: common
-      WHEAT: common
+      RABBIT: basic
+      RABBIT_STEW: basic
+      ROTTEN_FLESH: basic
+      SALMON: basic
+      SPIDER_EYE: basic
+      SUSPICIOUS_STEW: basic
+      SWEET_BERRIES: basic
+      TROPICAL_FISH: basic
+      WHEAT: basic
 
       # Saplings and seeds
-      OAK_SAPLING: common
-      SPRUCE_SAPLING: common
-      BIRCH_SAPLING: common
-      JUNGLE_SAPLING: common
-      ACACIA_SAPLING: common
-      DARK_OAK_SAPLING: common
-      CHERRY_SAPLING: common
-      PALE_OAK_SAPLING: common
-      MANGROVE_PROPAGULE: common
-      CRIMSON_FUNGUS: common
-      WARPED_FUNGUS: common
+      OAK_SAPLING: basic
+      SPRUCE_SAPLING: basic
+      BIRCH_SAPLING: basic
+      JUNGLE_SAPLING: basic
+      ACACIA_SAPLING: basic
+      DARK_OAK_SAPLING: basic
+      CHERRY_SAPLING: basic
+      PALE_OAK_SAPLING: basic
+      MANGROVE_PROPAGULE: basic
+      CRIMSON_FUNGUS: basic
+      WARPED_FUNGUS: basic
       WHEAT_SEEDS: basic
       BEETROOT_SEEDS: basic
       PUMPKIN_SEEDS: basic
@@ -917,38 +465,37 @@ pricing:
       BEEHIVE: uncommon
       BELL: rare
       LODESTONE: rare
-      BEACON: epic
-      CONDUIT: epic
+      BEACON: legendary
+      CONDUIT: legendary
       END_CRYSTAL: epic
       NETHERITE_BLOCK: NETHERITE_BLOCK
       TOTEM_OF_UNDYING: epic
       RESPAWN_ANCHOR: rare
-      TNT: uncommon
-      HAY_BLOCK: common
-      CARPET: common
-      CAULDRON: common
+      TNT: basic
+      HAY_BLOCK: basic
+      CARPET: basic
+      CAULDRON: basic
 
       # Copper set (1.20/1.21)
       COPPER_BLOCK: common
       CUT_COPPER: common
       CUT_COPPER_SLAB: common
-      CUT_COPPER_STAIRS: common
+      CUT_COPPER_STAIRS: uncommon
       COPPER_TRAPDOOR: common
       COPPER_DOOR: common
       COPPER_GRATE: common
-      COPPER_BULB: uncommon
 
       # Nether blocks
       NETHER_BRICKS: common
       NETHER_BRICK_SLAB: common
-      NETHER_BRICK_STAIRS: common
+      NETHER_BRICK_STAIRS: uncommon
       CHISELED_NETHER_BRICKS: common
       RED_NETHER_BRICKS: common
 
       # End blocks
       PURPUR_BLOCK: common
       PURPUR_SLAB: common
-      PURPUR_STAIRS: common
+      PURPUR_STAIRS: uncommon
       END_STONE_BRICKS: common
 
       # Doors and trapdoors - Iron and more
@@ -956,23 +503,34 @@ pricing:
       IRON_TRAPDOOR: uncommon
 
       # Dyes (crafted variants)
-      WHITE_DYE: common
-      ORANGE_DYE: common
-      MAGENTA_DYE: common
-      LIGHT_BLUE_DYE: common
-      YELLOW_DYE: common
-      LIME_DYE: common
-      PINK_DYE: common
-      GRAY_DYE: common
-      LIGHT_GRAY_DYE: common
-      CYAN_DYE: common
-      PURPLE_DYE: common
-      BLUE_DYE: common
-      BROWN_DYE: common
-      GREEN_DYE: common
-      RED_DYE: common
-      BLACK_DYE: common
+      WHITE_DYE: basic
+      ORANGE_DYE: basic
+      MAGENTA_DYE: basic
+      LIGHT_BLUE_DYE: basic
+      YELLOW_DYE: basic
+      LIME_DYE: basic
+      PINK_DYE: basic
+      GRAY_DYE: basic
+      LIGHT_GRAY_DYE: basic
+      CYAN_DYE: basic
+      PURPLE_DYE: basic
+      BLUE_DYE: basic
+      BROWN_DYE: basic
+      GREEN_DYE: basic
+      RED_DYE: basic
+      BLACK_DYE: basic
 
+    # Spawn eggs-specific base price per unit for each rarity. Applies only to spawn egg items priced via overrides.SpawnEggs.
+    per_rarity_base_spawn_eggs:
+      BASIC: 1000
+      COMMON: 5000
+      UNCOMMON: 8000
+      RARE: 10000
+      EPIC: 12000
+      LEGENDARY: 150000.0
+      MYTHIC: 300000.0
+
+    # Spawn eggs (uses pricing.per_rarity_base_spawn_eggs)
     SpawnEggs:
       # Spawn eggs - set rarity per entity's spawn egg
       ALLAY_SPAWN_EGG: rare
@@ -990,7 +548,7 @@ pricing:
       CHICKEN_SPAWN_EGG: common
       COD_SPAWN_EGG: common
       COW_SPAWN_EGG: common
-      CREEPER_SPAWN_EGG: legendary
+      CREEPER_SPAWN_EGG: common
       DOLPHIN_SPAWN_EGG: rare
       DONKEY_SPAWN_EGG: uncommon
       DROWNED_SPAWN_EGG: common
@@ -1054,6 +612,7 @@ pricing:
       ZOMBIE_VILLAGER_SPAWN_EGG: uncommon
       ZOMBIFIED_PIGLIN_SPAWN_EGG: common
 
+    # Enchanted books (uses pricing.per_rarity_base)
     EnchantmentBooks:
       # Enchantment books - set rarity per enchantment key (applies to any level)
       # Armor
@@ -1108,6 +667,17 @@ pricing:
       BREACH: epic
       WIND_BURST: epic
 
+    # Spawners-specific base price per unit for each rarity. Applies only to spawner items priced via overrides.Spawners.
+    per_rarity_base_spawners:
+      BASIC: 1000000
+      COMMON: 1100000
+      UNCOMMON: 1200000
+      RARE: 1300000
+      EPIC: 1400000
+      LEGENDARY: 150000.0
+      MYTHIC: 300000.0
+
+    # Spawners (uses pricing.per_rarity_base_spawners, with a dedicated default for plain spawners)
     Spawners:
       # Plain spawner (no entity set on the item)
       PLAIN: rare
@@ -1160,7 +730,7 @@ pricing:
       STRAY: common
       SPIDER: common
       CAVE_SPIDER: uncommon
-      CREEPER: legendary
+      CREEPER: common
       ENDERMAN: rare
       WITCH: uncommon
       SLIME: uncommon
@@ -1202,4 +772,577 @@ pricing:
       # 1.21 Trial chambers
       BREEZE: rare
       BOGGED: uncommon
+
+    # Only the following rarities should be listed here: BASIC, COMMON, UNCOMMON, RARE The LEGENDARY and MYTHIC are for top-tier special cases.
+    per_rarity_base_blocks:
+      BASIC: 0.10
+      COMMON: 0.15
+      UNCOMMON: 0.20
+      RARE: 0.25
+
+    # Blocks (uses pricing.per_rarity_base_blocks): natural terrain and building blocks
+    Blocks:
+      # Natural and Craftable Blocks — organized by world and type
+      # Overworld — natural and craftable blocks
+      DEEPSLATE: common
+      STONE: common
+      DIRT: basic
+      GRASS_BLOCK: basic
+      COARSE_DIRT: basic
+      MUD: common
+      SAND: basic
+      RED_SAND: common
+      GRAVEL: basic 
+      OAK_LOG: common
+      OAK_WOOD: common
+      PALE_OAK_LOG: common
+      PALE_OAK_WOOD: common
+      SPRUCE_LOG: common
+      SPRUCE_WOOD: common
+      BIRCH_LOG: common
+      BIRCH_WOOD: common
+      JUNGLE_LOG: common
+      JUNGLE_WOOD: common
+      ACACIA_LOG: common
+      ACACIA_WOOD: common
+      DARK_OAK_LOG: common
+      DARK_OAK_WOOD: common
+      MANGROVE_LOG: common
+      MANGROVE_WOOD: common
+      CHERRY_LOG: common
+      CHERRY_WOOD: common
+      ANDESITE: common
+      DIORITE: common
+      GRANITE: common
+      TUFF: common
+      CALCITE: common
+      SMOOTH_BASALT: common
+      CLAY: common
+      ROOTED_DIRT: common
+      MOSS_BLOCK: common
+      MOSS_CARPET: common
+      DRIPSTONE_BLOCK: common
+      POINTED_DRIPSTONE: common
+      GLOW_LICHEN: common
+      AMETHYST_BLOCK: rare
+      BUDDING_AMETHYST: rare
+      AMETHYST_CLUSTER: rare
+      SMALL_AMETHYST_BUD: rare
+      MEDIUM_AMETHYST_BUD: rare
+      LARGE_AMETHYST_BUD: rare
+      SNOW: common
+      SNOW_BLOCK: common
+      POWDER_SNOW: common
+      ICE: common
+      PACKED_ICE: common
+      BLUE_ICE: common      
+      STONE_SLAB: basic
+      STONE_STAIRS: uncommon
+      STONE_BRICKS: common
+      STONE_BRICK_SLAB: basic
+      STONE_BRICK_STAIRS: uncommon
+      CHISELED_STONE_BRICKS: common
+      CRACKED_STONE_BRICKS: common
+      MOSSY_STONE_BRICKS: common
+      MOSSY_STONE_BRICK_SLAB: basic
+      MOSSY_STONE_BRICK_STAIRS: uncommon
+      COBBLESTONE_SLAB: basic
+      COBBLESTONE_STAIRS: uncommon
+      MOSSY_COBBLESTONE: common
+      MOSSY_COBBLESTONE_SLAB: basic
+      MOSSY_COBBLESTONE_STAIRS: uncommon
+      ANDESITE_SLAB: basic
+      ANDESITE_STAIRS: uncommon
+      DIORITE_SLAB: basic
+      DIORITE_STAIRS: uncommon
+      GRANITE_SLAB: basic
+      GRANITE_STAIRS: uncommon
+      TUFF_SLAB: basic
+      TUFF_STAIRS: uncommon
+      POLISHED_ANDESITE: common
+      POLISHED_ANDESITE_SLAB: basic
+      POLISHED_ANDESITE_STAIRS: uncommon
+      POLISHED_DIORITE: common
+      POLISHED_DIORITE_SLAB: basic
+      POLISHED_DIORITE_STAIRS: uncommon
+      POLISHED_GRANITE: common
+      POLISHED_GRANITE_SLAB: basic
+      POLISHED_GRANITE_STAIRS: uncommon
+      POLISHED_TUFF: common
+      POLISHED_TUFF_SLAB: basic
+      POLISHED_TUFF_STAIRS: uncommon
+      CHISELED_TUFF: common
+      TUFF_BRICKS: common
+      TUFF_BRICK_SLAB: basic
+      TUFF_BRICK_STAIRS: uncommon
+      CHISELED_TUFF_BRICKS: common
+      STONE_BRICK_WALL: common
+      MOSSY_STONE_BRICK_WALL: common
+      COBBLESTONE_WALL: common
+      MOSSY_COBBLESTONE_WALL: common
+      ANDESITE_WALL: common
+      DIORITE_WALL: common
+      GRANITE_WALL: common
+      TUFF_WALL: common
+      POLISHED_TUFF_WALL: common
+      TUFF_BRICK_WALL: common
+      BRICK_WALL: common
+      PRISMARINE_WALL: common
+      END_STONE_BRICK_WALL: common
+      NETHER_BRICK_WALL: common
+      RED_NETHER_BRICK_WALL: common
+      NETHER_BRICK_FENCE: common
+      SANDSTONE_WALL: common
+      RED_SANDSTONE_WALL: common
+      MUD_BRICK_WALL: common
+      COBBLED_DEEPSLATE_WALL: common
+      POLISHED_DEEPSLATE_WALL: common
+      DEEPSLATE_BRICK_WALL: common
+      DEEPSLATE_TILE_WALL: common
+      BLACKSTONE_WALL: common
+      POLISHED_BLACKSTONE_WALL: common
+      POLISHED_BLACKSTONE_BRICK_WALL: common
+      RESIN_BRICK_WALL: common
+      RESIN_BLOCK: uncommon
+      RESIN_BRICKS: uncommon
+      RESIN_BRICK_SLAB: basic
+      RESIN_BRICK_STAIRS: uncommon
+      CHISELED_RESIN_BRICKS: uncommon
+      COBBLED_DEEPSLATE: basic
+      COBBLED_DEEPSLATE_SLAB: basic
+      COBBLED_DEEPSLATE_STAIRS: uncommon
+      DEEPSLATE_TILES: common
+      DEEPSLATE_TILE_SLAB: basic
+      DEEPSLATE_TILE_STAIRS: uncommon
+      DEEPSLATE_BRICKS: common
+      DEEPSLATE_BRICK_SLAB: basic
+      DEEPSLATE_BRICK_STAIRS: uncommon
+      CHISELED_DEEPSLATE: common
+      POLISHED_DEEPSLATE: common
+      POLISHED_DEEPSLATE_SLAB: basic
+      POLISHED_DEEPSLATE_STAIRS: uncommon
+      SANDSTONE: basic
+      SANDSTONE_SLAB: basic
+      SANDSTONE_STAIRS: uncommon
+      CHISELED_SANDSTONE: common
+      CUT_SANDSTONE: common
+      CUT_SANDSTONE_SLAB: common
+      RED_SANDSTONE: basic
+      RED_SANDSTONE_SLAB: basic
+      RED_SANDSTONE_STAIRS: uncommon
+      CHISELED_RED_SANDSTONE: common
+      CUT_RED_SANDSTONE: common
+      CUT_RED_SANDSTONE_SLAB: common
+      QUARTZ_BLOCK: common
+      QUARTZ_SLAB: basic
+      QUARTZ_STAIRS: uncommon
+      CHISELED_QUARTZ_BLOCK: common
+      QUARTZ_PILLAR: common
+      SMOOTH_QUARTZ: common
+      SMOOTH_QUARTZ_SLAB: basic
+      SMOOTH_QUARTZ_STAIRS: uncommon
+      BRICKS: uncommon
+      BRICK_SLAB: basic
+      BRICK_STAIRS: uncommon
+      TERRACOTTA: common
+      WHITE_TERRACOTTA: common
+      ORANGE_TERRACOTTA: common
+      MAGENTA_TERRACOTTA: common
+      LIGHT_BLUE_TERRACOTTA: common
+      YELLOW_TERRACOTTA: common
+      LIME_TERRACOTTA: common
+      PINK_TERRACOTTA: common
+      GRAY_TERRACOTTA: common
+      LIGHT_GRAY_TERRACOTTA: common
+      CYAN_TERRACOTTA: common
+      PURPLE_TERRACOTTA: common
+      BLUE_TERRACOTTA: common
+      BROWN_TERRACOTTA: common
+      GREEN_TERRACOTTA: common
+      RED_TERRACOTTA: common
+      BLACK_TERRACOTTA: common
+      WHITE_GLAZED_TERRACOTTA: common
+      ORANGE_GLAZED_TERRACOTTA: common
+      MAGENTA_GLAZED_TERRACOTTA: common
+      LIGHT_BLUE_GLAZED_TERRACOTTA: common
+      YELLOW_GLAZED_TERRACOTTA: common
+      LIME_GLAZED_TERRACOTTA: common
+      PINK_GLAZED_TERRACOTTA: common
+      GRAY_GLAZED_TERRACOTTA: common
+      LIGHT_GRAY_GLAZED_TERRACOTTA: common
+      CYAN_GLAZED_TERRACOTTA: common
+      PURPLE_GLAZED_TERRACOTTA: common
+      BLUE_GLAZED_TERRACOTTA: common
+      BROWN_GLAZED_TERRACOTTA: common
+      GREEN_GLAZED_TERRACOTTA: common
+      RED_GLAZED_TERRACOTTA: common
+      BLACK_GLAZED_TERRACOTTA: common
+      WHITE_CONCRETE_POWDER: uncommon
+      ORANGE_CONCRETE_POWDER: uncommon
+      MAGENTA_CONCRETE_POWDER: uncommon
+      LIGHT_BLUE_CONCRETE_POWDER: uncommon
+      YELLOW_CONCRETE_POWDER: uncommon
+      LIME_CONCRETE_POWDER: uncommon
+      PINK_CONCRETE_POWDER: uncommon
+      GRAY_CONCRETE_POWDER: uncommon
+      LIGHT_GRAY_CONCRETE_POWDER: uncommon
+      CYAN_CONCRETE_POWDER: uncommon
+      PURPLE_CONCRETE_POWDER: uncommon
+      BLUE_CONCRETE_POWDER: uncommon
+      BROWN_CONCRETE_POWDER: uncommon
+      GREEN_CONCRETE_POWDER: uncommon
+      RED_CONCRETE_POWDER: uncommon
+      BLACK_CONCRETE_POWDER: uncommon
+      WHITE_CONCRETE: uncommon
+      ORANGE_CONCRETE: uncommon
+      MAGENTA_CONCRETE: uncommon
+      LIGHT_BLUE_CONCRETE: uncommon
+      YELLOW_CONCRETE: uncommon
+      LIME_CONCRETE: uncommon
+      PINK_CONCRETE: uncommon
+      GRAY_CONCRETE: uncommon
+      LIGHT_GRAY_CONCRETE: uncommon
+      CYAN_CONCRETE: uncommon
+      PURPLE_CONCRETE: uncommon
+      BLUE_CONCRETE: uncommon
+      BROWN_CONCRETE: uncommon
+      GREEN_CONCRETE: uncommon
+      RED_CONCRETE: uncommon
+      BLACK_CONCRETE: uncommon
+      GLASS: common
+      GLASS_PANE: common
+      WHITE_STAINED_GLASS: common
+      ORANGE_STAINED_GLASS: common
+      MAGENTA_STAINED_GLASS: common
+      LIGHT_BLUE_STAINED_GLASS: common
+      YELLOW_STAINED_GLASS: common
+      LIME_STAINED_GLASS: common
+      PINK_STAINED_GLASS: common
+      GRAY_STAINED_GLASS: common
+      LIGHT_GRAY_STAINED_GLASS: common
+      CYAN_STAINED_GLASS: common
+      PURPLE_STAINED_GLASS: common
+      BLUE_STAINED_GLASS: common
+      BROWN_STAINED_GLASS: common
+      GREEN_STAINED_GLASS: common
+      RED_STAINED_GLASS: common
+      BLACK_STAINED_GLASS: common
+      WHITE_STAINED_GLASS_PANE: basic
+      ORANGE_STAINED_GLASS_PANE: basic
+      MAGENTA_STAINED_GLASS_PANE: basic
+      LIGHT_BLUE_STAINED_GLASS_PANE: basic
+      YELLOW_STAINED_GLASS_PANE: basic
+      LIME_STAINED_GLASS_PANE: basic
+      PINK_STAINED_GLASS_PANE: basic
+      GRAY_STAINED_GLASS_PANE: basic
+      LIGHT_GRAY_STAINED_GLASS_PANE: basic
+      CYAN_STAINED_GLASS_PANE: basic
+      PURPLE_STAINED_GLASS_PANE: basic
+      BLUE_STAINED_GLASS_PANE: basic
+      BROWN_STAINED_GLASS_PANE: basic
+      GREEN_STAINED_GLASS_PANE: basic
+      RED_STAINED_GLASS_PANE: basic
+      BLACK_STAINED_GLASS_PANE: basic
+      OAK_PLANKS: common
+      OAK_STAIRS: uncommon
+      OAK_SLAB: basic
+      OAK_FENCE: common
+      OAK_FENCE_GATE: common
+      OAK_DOOR: common
+      OAK_TRAPDOOR: common
+      OAK_SIGN: common
+      OAK_HANGING_SIGN: common
+      OAK_PRESSURE_PLATE: common
+      OAK_BUTTON: common
+      OAK_SHELF: common
+      STRIPPED_OAK_LOG: common
+      STRIPPED_OAK_WOOD: common
+      SPRUCE_PLANKS: common
+      SPRUCE_STAIRS: uncommon
+      SPRUCE_SLAB: basic
+      SPRUCE_FENCE: common
+      SPRUCE_FENCE_GATE: common
+      SPRUCE_DOOR: common
+      SPRUCE_TRAPDOOR: common
+      SPRUCE_SIGN: common
+      SPRUCE_HANGING_SIGN: common
+      SPRUCE_PRESSURE_PLATE: common
+      SPRUCE_BUTTON: common
+      SPRUCE_SHELF: common
+      STRIPPED_SPRUCE_LOG: common
+      STRIPPED_SPRUCE_WOOD: common
+      BAMBOO_PLANKS: common
+      BAMBOO_STAIRS: uncommon
+      BAMBOO_SLAB: basic
+      BAMBOO_FENCE: common
+      BAMBOO_FENCE_GATE: common
+      BAMBOO_DOOR: common
+      BAMBOO_TRAPDOOR: common
+      BAMBOO_SIGN: common
+      BAMBOO_HANGING_SIGN: common
+      BAMBOO_PRESSURE_PLATE: common
+      BAMBOO_BUTTON: common
+      BAMBOO_SHELF: common
+      BAMBOO_BLOCK: common
+      STRIPPED_BAMBOO_BLOCK: common
+      BAMBOO_MOSAIC: common
+      BAMBOO_MOSAIC_SLAB: basic
+      BAMBOO_MOSAIC_STAIRS: uncommon
+      BIRCH_PLANKS: common
+      BIRCH_STAIRS: uncommon
+      BIRCH_SLAB: basic
+      BIRCH_FENCE: common
+      BIRCH_FENCE_GATE: common
+      BIRCH_DOOR: common
+      BIRCH_TRAPDOOR: common
+      BIRCH_SIGN: common
+      BIRCH_HANGING_SIGN: common
+      BIRCH_PRESSURE_PLATE: common
+      BIRCH_BUTTON: common
+      BIRCH_SHELF: common
+      STRIPPED_BIRCH_LOG: common
+      STRIPPED_BIRCH_WOOD: common
+      JUNGLE_PLANKS: common
+      JUNGLE_STAIRS: uncommon
+      JUNGLE_SLAB: basic
+      JUNGLE_FENCE: common
+      JUNGLE_FENCE_GATE: common
+      JUNGLE_DOOR: common
+      JUNGLE_TRAPDOOR: common
+      JUNGLE_SIGN: common
+      JUNGLE_HANGING_SIGN: common
+      JUNGLE_PRESSURE_PLATE: common
+      JUNGLE_BUTTON: common
+      JUNGLE_SHELF: common
+      STRIPPED_JUNGLE_LOG: common
+      STRIPPED_JUNGLE_WOOD: common
+      ACACIA_PLANKS: common
+      ACACIA_STAIRS: uncommon
+      ACACIA_SLAB: basic
+      ACACIA_FENCE: common
+      ACACIA_FENCE_GATE: common
+      ACACIA_DOOR: common
+      ACACIA_TRAPDOOR: common
+      ACACIA_SIGN: common
+      ACACIA_HANGING_SIGN: common
+      ACACIA_PRESSURE_PLATE: common
+      ACACIA_BUTTON: common
+      ACACIA_SHELF: common
+      STRIPPED_ACACIA_LOG: common
+      STRIPPED_ACACIA_WOOD: common
+      DARK_OAK_PLANKS: common
+      DARK_OAK_STAIRS: uncommon
+      DARK_OAK_SLAB: basic
+      DARK_OAK_FENCE: common
+      DARK_OAK_FENCE_GATE: common
+      DARK_OAK_DOOR: common
+      DARK_OAK_TRAPDOOR: common
+      DARK_OAK_SIGN: common
+      DARK_OAK_HANGING_SIGN: common
+      DARK_OAK_PRESSURE_PLATE: common
+      DARK_OAK_BUTTON: common
+      DARK_OAK_SHELF: common
+      STRIPPED_DARK_OAK_LOG: common
+      WHITE_WOOL: common
+      ORANGE_WOOL: common
+      MAGENTA_WOOL: common
+      LIGHT_BLUE_WOOL: common
+      YELLOW_WOOL: common
+      LIME_WOOL: common
+      PINK_WOOL: common
+      GRAY_WOOL: common
+      LIGHT_GRAY_WOOL: common
+      CYAN_WOOL: common
+      PURPLE_WOOL: common
+      BLUE_WOOL: common
+      BROWN_WOOL: common
+      GREEN_WOOL: common
+      RED_WOOL: common
+      BLACK_WOOL: common
+      WHITE_BED: common
+      ORANGE_BED: basic
+      MAGENTA_BED: basic
+      LIGHT_BLUE_BED: basic
+      YELLOW_BED: basic
+      LIME_BED: basic
+      PINK_BED: basic
+      GRAY_BED: basic
+      LIGHT_GRAY_BED: basic
+      CYAN_BED: basic
+      PURPLE_BED: basic
+      BLUE_BED: basic
+      BROWN_BED: basic
+      GREEN_BED: basic
+      RED_BED: basic
+      BLACK_BED: basic
+      COPPER_BLOCK: common
+      CUT_COPPER: common
+      CUT_COPPER_SLAB: common
+      CUT_COPPER_STAIRS: uncommon
+      COPPER_TRAPDOOR: common
+      COPPER_DOOR: common
+      COPPER_GRATE: common
+      VINE: basic
+      LILY_PAD: basic
+      SUGAR_CANE: basic
+      CACTUS: basic
+      BAMBOO: basic
+      SWEET_BERRY_BUSH: basic
+      SEAGRASS: basic
+      TALL_SEAGRASS: basic
+      KELP: basic
+      KELP_PLANT: basic
+      SEA_PICKLE: basic
+      LILY_OF_THE_VALLEY: basic
+      DANDELION: basic
+      POPPY: basic
+      BLUE_ORCHID: basic
+      ALLIUM: basic
+      AZURE_BLUET: basic
+      RED_TULIP: basic
+      ORANGE_TULIP: basic
+      WHITE_TULIP: basic
+      PINK_TULIP: basic
+      OXEYE_DAISY: basic
+      CORNFLOWER: basic
+      SUNFLOWER: basic
+      LILAC: basic
+      ROSE_BUSH: basic
+      PEONY: basic
+      GRASS: basic
+      TALL_GRASS: basic
+      FERN: basic
+      LARGE_FERN: basic
+      AZALEA: basic
+      FLOWERING_AZALEA: basic
+      AZALEA_LEAVES: basic
+      FLOWERING_AZALEA_LEAVES: basic
+      SPORE_BLOSSOM: basic
+      HANGING_ROOTS: basic
+      BIG_DRIPLEAF: basic
+      SMALL_DRIPLEAF: basic
+      CAVE_VINES: basic
+      CAVE_VINES_PLANT: basic
+      OAK_LEAVES: common
+      PALE_OAK_LEAVES: common
+      SPRUCE_LEAVES: common
+      BIRCH_LEAVES: common
+      JUNGLE_LEAVES: common
+      ACACIA_LEAVES: common
+      DARK_OAK_LEAVES: common
+      MANGROVE_LEAVES: common
+      CHERRY_LEAVES: common
+      MANGROVE_ROOTS: uncommon
+      MUDDY_MANGROVE_ROOTS: uncommon
+      SCULK: basic
+      SCULK_VEIN: common
+      SCULK_CATALYST: uncommon
+      SCULK_SHRIEKER: rare
+      SCULK_SENSOR: uncommon
+      BROWN_MUSHROOM: common
+      RED_MUSHROOM: common
+      MUSHROOM_STEM: common
+      BROWN_MUSHROOM_BLOCK: common
+      RED_MUSHROOM_BLOCK: common
+      PODZOL: common
+      MYCELIUM: common
+      DIRT_PATH: basic
+      COBBLESTONE: basic
+      COBWEB: common
+      DEAD_BUSH: common
+      PUMPKIN: common
+      MELON: common
+      CARVED_PUMPKIN: common
+      SPONGE: rare
+      WET_SPONGE: rare
+      # Nether — natural and craftable blocks
+      NETHERRACK: basic
+      BASALT: common
+      BLACKSTONE: common
+      GILDED_BLACKSTONE: common
+      SOUL_SAND: basic
+      SOUL_SOIL: basic
+      MAGMA_BLOCK: common
+      CRIMSON_NYLIUM: basic
+      WARPED_NYLIUM: basic
+      GLOWSTONE: common
+      NETHER_WART_BLOCK: common
+      WARPED_WART_BLOCK: common
+      SHROOMLIGHT: common
+      CRIMSON_ROOTS: common
+      WARPED_ROOTS: common
+      NETHER_SPROUTS: common
+      WEEPING_VINES: common
+      TWISTING_VINES: common
+      CRIMSON_STEM: common
+      CRIMSON_HYPHAE: common
+      WARPED_STEM: common
+      WARPED_HYPHAE: common
+      # Nether crafted blocks
+      NETHER_BRICKS: common
+      NETHER_BRICK_SLAB: common
+      NETHER_BRICK_STAIRS: uncommon
+      CHISELED_NETHER_BRICKS: common
+      RED_NETHER_BRICKS: common
+      # End — natural and craftable blocks
+      END_STONE: basic
+      PURPUR_BLOCK: common
+      PURPUR_SLAB: common
+      PURPUR_STAIRS: uncommon
+      END_STONE_BRICKS: common
+
+    # Ores-specific base price per unit for each rarity. Applies to ores and their drops (ores, raw metals, ingots, gems):
+    # - Overworld ores (COAL_ORE..DIAMOND_ORE and deepslate variants) and drops (COAL, RAW_IRON, IRON_INGOT, etc.)
+    # - Nether ores (NETHER_QUARTZ_ORE, NETHER_GOLD_ORE, ANCIENT_DEBRIS) and drops (QUARTZ, NETHERITE_SCRAP/INGOT)
+    # - Amethyst shards and related geode items
+    per_rarity_base_ores:
+      BASIC: 25
+      COMMON: 55
+      UNCOMMON: 85
+      RARE: 165
+      EPIC: 2000.0
+      LEGENDARY: 150000.0
+      MYTHIC: 300000.0
+
+    # Ores (uses pricing.per_rarity_base_ores): ore blocks and their drops
+    Ores:
+      # Overworld ores and deepslate variants
+      COAL_ORE: basic
+      DEEPSLATE_COAL_ORE: basic
+      IRON_ORE: uncommon
+      DEEPSLATE_IRON_ORE: uncommon
+      COPPER_ORE: basic
+      DEEPSLATE_COPPER_ORE: basic
+      GOLD_ORE: uncommon
+      DEEPSLATE_GOLD_ORE: uncommon
+      REDSTONE_ORE: common
+      DEEPSLATE_REDSTONE_ORE: common
+      LAPIS_ORE: uncommon
+      DEEPSLATE_LAPIS_ORE: uncommon
+      EMERALD_ORE: rare
+      DEEPSLATE_EMERALD_ORE: rare
+      DIAMOND_ORE: rare
+      DEEPSLATE_DIAMOND_ORE: rare
+
+      # Common ore drops
+      COAL: basic
+      RAW_IRON: common
+      IRON_INGOT: uncommon
+      RAW_COPPER: basic
+      COPPER_INGOT: common
+      RAW_GOLD: uncommon
+      GOLD_INGOT: uncommon
+      REDSTONE: common
+      LAPIS_LAZULI: uncommon
+      DIAMOND: rare
+      EMERALD: rare
+      QUARTZ: common
+      AMETHYST_SHARD: uncommon
+      NETHERITE_SCRAP: NETHERITE_SCRAP
+      NETHERITE_INGOT: NETHERITE_INGOT
+
+      # Nether ores
+      NETHER_QUARTZ_ORE: common
+      NETHER_GOLD_ORE: common
+      ANCIENT_DEBRIS: ANCIENT_DEBRIS
 

@@ -15,17 +15,21 @@ public final class EcoShopPro extends JavaPlugin {
     private static EcoShopPro instance;
     private Economy economy;
     private ListingsManager listingsManager;
+    private long listingThrottleMs;
 
     public static EcoShopPro getInstance() { return instance; }
 
     public Economy getEconomy() { return economy; }
     public ListingsManager getListingsManager() { return listingsManager; }
+    public long getListingThrottleMs() { return listingThrottleMs; }
 
     @Override
     public void onEnable() {
         instance = this;
         // Config and pricing
         saveDefaultConfig();
+        // Load throttle value (ms) to space out listing actions and avoid anticheat bans
+        this.listingThrottleMs = getConfig().getLong("listing_throttle_ms", 600L);
         Pricing.load(this);
         // Storage
         this.listingsManager = new ListingsManager(getDataFolder());
