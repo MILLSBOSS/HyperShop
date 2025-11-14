@@ -7,7 +7,7 @@ listing_throttle_ms: 600
 
 pricing:
   # Base price per unit for each rarity. You can tweak these to change the suggested max price calculation.
-  per_rarity_base:
+  per_rarity_base_craftables:
     BASIC: 5.0         # New lowest tier for very common/basic items
     COMMON: 15.0
     UNCOMMON: 20.0
@@ -24,8 +24,9 @@ pricing:
 
 
   # Optional overrides. You can specify exact per-unit prices under `overrides` by material name.
-  # Categories below are grouped to follow the per_rarity_base sections above.
-  # - Under General (per_rarity_base): Craftables, EnchantmentBooks
+  # Categories below are grouped to follow the per_rarity_base_craftables and category-specific per_rarity_base_* sections above.
+  # - Under General (per_rarity_base_craftables): Craftables
+  # - Under Enchantment Books (per_rarity_base_enchantment_books): EnchantmentBooks subsection
   # - Under Armor (per_rarity_base_armor): Armor items live inside Craftables → Armor subsection
   # - Under Spawn Eggs (per_rarity_base_spawn_eggs): SpawnEggs subsection
   # - Under Spawners (per_rarity_base_spawners): Spawners subsection
@@ -36,10 +37,10 @@ pricing:
     # DIAMOND: 150.0
     # DIRT: 1.0
 
-    # General (uses pricing.per_rarity_base unless otherwise noted)
+    # General (uses pricing.per_rarity_base_craftables unless otherwise noted)
     # Craftables: items and blocks crafted by players.
     # Armor entries here will use pricing.per_rarity_base_armor; craftable blocks will use pricing.per_rarity_base_blocks;
-    # non-block, non-armor items will use pricing.per_rarity_base.
+    # non-block, non-armor items will use pricing.per_rarity_base_craftables.
     Craftables:
       # Workstations and storage
       CRAFTING_TABLE: basic
@@ -178,6 +179,7 @@ pricing:
       BOWL: common
       BUCKET: common
       GLASS_BOTTLE: common
+      POTION: common
       PAPER: common
       BOOK: common
       MAP: common
@@ -198,7 +200,6 @@ pricing:
       LEAD: common
       BONE_BLOCK: common
       TINTED_GLASS: common
-      NETHER_WART: common
       NETHER_STAR: legendary
       HEAVY_CORE: elytra
       TRIAL_KEY: rare
@@ -249,24 +250,6 @@ pricing:
       FLOW_ARMOR_TRIM_SMITHING_TEMPLATE: uncommon
       BOLT_ARMOR_TRIM_SMITHING_TEMPLATE: uncommon
       NETHERITE_UPGRADE_SMITHING_TEMPLATE: uncommon
-
-
-      WHITE_WOOL: common
-      ORANGE_WOOL: common
-      MAGENTA_WOOL: common
-      LIGHT_BLUE_WOOL: common
-      YELLOW_WOOL: common
-      LIME_WOOL: common
-      PINK_WOOL: common
-      GRAY_WOOL: common
-      LIGHT_GRAY_WOOL: common
-      CYAN_WOOL: common
-      PURPLE_WOOL: common
-      BLUE_WOOL: common
-      BROWN_WOOL: common
-      GREEN_WOOL: common
-      RED_WOOL: common
-      BLACK_WOOL: common
       WHITE_BED: common
       ORANGE_BED: basic
       MAGENTA_BED: basic
@@ -307,6 +290,80 @@ pricing:
       SKULL_BANNER_PATTERN: common
       MOJANG_BANNER_PATTERN: common
       PIGLIN_BANNER_PATTERN: common
+
+      # Food and consumables (all edible items)
+      APPLE: basic
+      BAKED_POTATO: basic
+      BEETROOT: basic
+      BEETROOT_SOUP: basic
+      BEEF: basic
+      BREAD: basic
+      CAKE: common
+      CARROT: basic
+      CHICKEN: basic
+      CHORUS_FRUIT: basic
+      COD: basic
+      COOKED_BEEF: basic
+      COOKED_CHICKEN: basic
+      COOKED_COD: basic
+      COOKED_MUTTON: basic
+      COOKED_PORKCHOP: basic
+      COOKED_RABBIT: basic
+      COOKED_SALMON: basic
+      COOKIE: basic
+      DRIED_KELP: basic
+      ENCHANTED_GOLDEN_APPLE: legendary
+      GLOW_BERRIES: basic
+      GOLDEN_APPLE: rare
+      GOLDEN_CARROT: common
+      HONEY_BOTTLE: basic
+      MELON_SLICE: basic
+      MILK_BUCKET: basic
+      NETHER_WART: common
+      MUSHROOM_STEW: basic
+      MUTTON: basic
+      POISONOUS_POTATO: basic
+      PORKCHOP: basic
+      POTATO: basic
+      PUFFERFISH: basic
+      PUMPKIN_PIE: common
+      RABBIT: basic
+      RABBIT_STEW: basic
+      ROTTEN_FLESH: basic
+      SALMON: basic
+      SPIDER_EYE: basic
+      SUSPICIOUS_STEW: basic
+      SWEET_BERRIES: basic
+      TROPICAL_FISH: basic
+      WHEAT: basic
+
+      # Utility blocks and misc
+      LADDER: common
+      BEEHIVE: uncommon
+      BELL: rare
+      LODESTONE: rare
+      BEACON: legendary
+      CONDUIT: legendary
+      END_CRYSTAL: epic
+      NETHERITE_BLOCK: NETHERITE_BLOCK
+      TOTEM_OF_UNDYING: epic
+      RESPAWN_ANCHOR: rare
+      TNT: basic
+      HAY_BLOCK: basic
+      CARPET: basic
+      CAULDRON: basic
+      DIAMOND_BLOCK: rare
+      EMERALD_BLOCK: rare
+      GOLD_BLOCK: uncommon
+      IRON_BLOCK: uncommon
+      REDSTONE_BLOCK: common
+      LAPIS_BLOCK: common
+      COAL_BLOCK: common
+      DRIED_KELP_BLOCK: basic
+
+      # Doors and trapdoors - Iron and more
+      IRON_DOOR: common
+      IRON_TRAPDOOR: common
 
       # Tools and equipment (expanded)
       WOODEN_SWORD: basic
@@ -396,50 +453,10 @@ pricing:
       NETHERITE_BOOTS: legendary
       TURTLE_HELMET: uncommon
 
-      # Food and consumables (all edible items)
-      APPLE: basic
-      BAKED_POTATO: basic
-      BEETROOT: basic
-      BEETROOT_SOUP: basic
-      BEEF: basic
-      BREAD: basic
-      CAKE: common
-      CARROT: basic
-      CHICKEN: basic
-      CHORUS_FRUIT: basic
-      COD: basic
-      COOKED_BEEF: basic
-      COOKED_CHICKEN: basic
-      COOKED_COD: basic
-      COOKED_MUTTON: basic
-      COOKED_PORKCHOP: basic
-      COOKED_RABBIT: basic
-      COOKED_SALMON: basic
-      COOKIE: basic
-      DRIED_KELP: basic
-      ENCHANTED_GOLDEN_APPLE: legendary
-      GLOW_BERRIES: basic
-      GOLDEN_APPLE: rare
-      GOLDEN_CARROT: common
-      HONEY_BOTTLE: basic
-      MELON_SLICE: basic
-      MILK_BUCKET: basic
-      MUSHROOM_STEW: basic
-      MUTTON: basic
-      POISONOUS_POTATO: basic
-      PORKCHOP: basic
-      POTATO: basic
-      PUFFERFISH: basic
-      PUMPKIN_PIE: common
-      RABBIT: basic
-      RABBIT_STEW: basic
-      ROTTEN_FLESH: basic
-      SALMON: basic
-      SPIDER_EYE: basic
-      SUSPICIOUS_STEW: basic
-      SWEET_BERRIES: basic
-      TROPICAL_FISH: basic
-      WHEAT: basic
+      # Saplings and seeds-specific base price per unit for each rarity (BASIC..COMMON). Applies only to the list below.
+      per_rarity_base_saplings_seeds:
+        BASIC: 1.5
+        COMMON: 5
 
       # Saplings and seeds
       OAK_SAPLING: basic
@@ -457,68 +474,10 @@ pricing:
       BEETROOT_SEEDS: basic
       PUMPKIN_SEEDS: basic
       MELON_SEEDS: basic
-      TORCHFLOWER_SEEDS: uncommon
-      PITCHER_POD: uncommon
+      TORCHFLOWER_SEEDS: common
+      PITCHER_POD: common
 
-      # Utility blocks and misc
-      LADDER: common
-      BEEHIVE: uncommon
-      BELL: rare
-      LODESTONE: rare
-      BEACON: legendary
-      CONDUIT: legendary
-      END_CRYSTAL: epic
-      NETHERITE_BLOCK: NETHERITE_BLOCK
-      TOTEM_OF_UNDYING: epic
-      RESPAWN_ANCHOR: rare
-      TNT: basic
-      HAY_BLOCK: basic
-      CARPET: basic
-      CAULDRON: basic
 
-      # Copper set (1.20/1.21)
-      COPPER_BLOCK: common
-      CUT_COPPER: common
-      CUT_COPPER_SLAB: common
-      CUT_COPPER_STAIRS: uncommon
-      COPPER_TRAPDOOR: common
-      COPPER_DOOR: common
-      COPPER_GRATE: common
-
-      # Nether blocks
-      NETHER_BRICKS: common
-      NETHER_BRICK_SLAB: common
-      NETHER_BRICK_STAIRS: uncommon
-      CHISELED_NETHER_BRICKS: common
-      RED_NETHER_BRICKS: common
-
-      # End blocks
-      PURPUR_BLOCK: common
-      PURPUR_SLAB: common
-      PURPUR_STAIRS: uncommon
-      END_STONE_BRICKS: common
-
-      # Doors and trapdoors - Iron and more
-      IRON_DOOR: common
-      IRON_TRAPDOOR: uncommon
-
-      # Dyes (crafted variants)
-      WHITE_DYE: basic
-      ORANGE_DYE: basic
-      MAGENTA_DYE: basic
-      LIGHT_BLUE_DYE: basic
-      YELLOW_DYE: basic
-      LIME_DYE: basic
-      PINK_DYE: basic
-      GRAY_DYE: basic
-      LIGHT_GRAY_DYE: basic
-      CYAN_DYE: basic
-      PURPLE_DYE: basic
-      BLUE_DYE: basic
-      BROWN_DYE: basic
-      GREEN_DYE: basic
-      RED_DYE: basic
-      BLACK_DYE: basic
 
     # Spawn eggs-specific base price per unit for each rarity. Applies only to spawn egg items priced via overrides.SpawnEggs.
     per_rarity_base_spawn_eggs:
@@ -612,7 +571,14 @@ pricing:
       ZOMBIE_VILLAGER_SPAWN_EGG: uncommon
       ZOMBIFIED_PIGLIN_SPAWN_EGG: common
 
-    # Enchanted books (uses pricing.per_rarity_base)
+    # Enchantment books-specific base price per unit for each rarity (BASIC..RARE). Applies only to EnchantmentBooks below.
+    per_rarity_base_enchantment_books:
+      BASIC: 10.0
+      COMMON: 15.0
+      UNCOMMON: 60.0
+      RARE: 35.0
+
+    # Enchanted books (uses pricing.per_rarity_base_enchantment_books)
     EnchantmentBooks:
       # Enchantment books - set rarity per enchantment key (applies to any level)
       # Armor
@@ -629,7 +595,7 @@ pricing:
       SOUL_SPEED: rare
       SWIFT_SNEAK: rare
       # Curses
-      BINDING_CURSE: epic
+      BINDING_CURSE: rare
       VANISHING_CURSE: rare
       # Swords
       SHARPNESS: rare
@@ -640,16 +606,16 @@ pricing:
       LOOTING: rare
       SWEEPING_EDGE: rare
       # Tools
-      MENDING: legendary
+      MENDING: rare
       UNBREAKING: rare
       EFFICIENCY: uncommon
       FORTUNE: rare
-      SILK_TOUCH: epic
+      SILK_TOUCH: rare
       # Trident
       LOYALTY: rare
       IMPALING: rare
       RIPTIDE: rare
-      CHANNELING: epic
+      CHANNELING: rare
       # Fishing
       LURE: uncommon
       LUCK_OF_THE_SEA: rare
@@ -657,15 +623,15 @@ pricing:
       POWER: uncommon
       PUNCH: uncommon
       FLAME: rare
-      INFINITY: epic
+      INFINITY: rare
       # Crossbow
       MULTISHOT: rare
       QUICK_CHARGE: uncommon
       PIERCING: uncommon
       # Mace (1.21)
-      DENSITY: epic
-      BREACH: epic
-      WIND_BURST: epic
+      DENSITY: rare
+      BREACH: rare
+      WIND_BURST: rare
 
     # Spawners-specific base price per unit for each rarity. Applies only to spawner items priced via overrides.Spawners.
     per_rarity_base_spawners:
@@ -1159,22 +1125,22 @@ pricing:
       GREEN_WOOL: common
       RED_WOOL: common
       BLACK_WOOL: common
-      WHITE_BED: common
-      ORANGE_BED: basic
-      MAGENTA_BED: basic
-      LIGHT_BLUE_BED: basic
-      YELLOW_BED: basic
-      LIME_BED: basic
-      PINK_BED: basic
-      GRAY_BED: basic
-      LIGHT_GRAY_BED: basic
-      CYAN_BED: basic
-      PURPLE_BED: basic
-      BLUE_BED: basic
-      BROWN_BED: basic
-      GREEN_BED: basic
-      RED_BED: basic
-      BLACK_BED: basic
+      WHITE_DYE: basic
+      ORANGE_DYE: basic
+      MAGENTA_DYE: basic
+      LIGHT_BLUE_DYE: basic
+      YELLOW_DYE: basic
+      LIME_DYE: basic
+      PINK_DYE: basic
+      GRAY_DYE: basic
+      LIGHT_GRAY_DYE: basic
+      CYAN_DYE: basic
+      PURPLE_DYE: basic
+      BLUE_DYE: basic
+      BROWN_DYE: basic
+      GREEN_DYE: basic
+      RED_DYE: basic
+      BLACK_DYE: basic
       COPPER_BLOCK: common
       CUT_COPPER: common
       CUT_COPPER_SLAB: common
@@ -1255,6 +1221,8 @@ pricing:
       CARVED_PUMPKIN: common
       SPONGE: rare
       WET_SPONGE: rare
+      OBSIDIAN: uncommon
+      CRYING_OBSIDIAN: rare
       # Nether — natural and craftable blocks
       NETHERRACK: basic
       BASALT: common
@@ -1309,8 +1277,8 @@ pricing:
       # Overworld ores and deepslate variants
       COAL_ORE: basic
       DEEPSLATE_COAL_ORE: basic
-      IRON_ORE: uncommon
-      DEEPSLATE_IRON_ORE: uncommon
+      IRON_ORE: common
+      DEEPSLATE_IRON_ORE: common
       COPPER_ORE: basic
       DEEPSLATE_COPPER_ORE: basic
       GOLD_ORE: uncommon

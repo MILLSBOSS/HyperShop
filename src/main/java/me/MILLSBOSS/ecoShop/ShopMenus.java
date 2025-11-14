@@ -26,7 +26,7 @@ import java.util.*;
 public final class ShopMenus {
 
     private static final int SELL_SLOT = 49; // bottom row middle
-    private static final int SERVER_SELL_SLOT = 48; // bottom row left of sell
+    private static final int SERVER_SELL_SLOT = 45; // bottom row far left
     private static final int MY_LISTINGS_SLOT = 50;
     private static final int PLAYER_HEAD_SLOT = 53;
 

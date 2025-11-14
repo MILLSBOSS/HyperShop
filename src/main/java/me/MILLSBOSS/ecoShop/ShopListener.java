@@ -440,7 +440,7 @@ public class ShopListener implements Listener {
         Inventory inv = p.getOpenInventory().getTopInventory();
         String title = p.getOpenInventory().getTitle();
         if (inv == null || !isMainTitle(title)) return;
-        ItemStack inSell = inv.getItem(48);
+        ItemStack inSell = inv.getItem(45);
         if (inSell == null || inSell.getType() == Material.AIR) return;
         // Ignore if it's our tagged placeholder
         if (inSell.hasItemMeta() && Constants.GUI_SERVER_SELL_PLACEHOLDER.equals(inSell.getItemMeta().getPersistentDataContainer().get(Constants.KEY_TYPE, org.bukkit.persistence.PersistentDataType.STRING))) {
@@ -461,7 +461,7 @@ public class ShopListener implements Listener {
         double suggested = Pricing.suggestMaxPrice(inSell);
         double payout = Math.round(suggested * 0.5 * 100.0) / 100.0;
         // Restore placeholder now
-        inv.setItem(48, ShopMenus.serverSellSlotItem());
+        inv.setItem(45, ShopMenus.serverSellSlotItem());
         // Clear cursor just in case
         p.setItemOnCursor(new ItemStack(Material.AIR));
         if (plugin.getEconomy() == null) {

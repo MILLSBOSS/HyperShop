@@ -33,6 +33,10 @@ public final class Pricing {
     private static final Map<Rarity, Double> perRarityBaseSpawners = new EnumMap<>(Rarity.class);
     // Spawn eggs-specific base values per rarity
     private static final Map<Rarity, Double> perRarityBaseSpawnEggs = new EnumMap<>(Rarity.class);
+    // Enchantment books-specific base values per rarity (BASIC..RARE)
+    private static final Map<Rarity, Double> perRarityBaseEnchantmentBooks = new EnumMap<>(Rarity.class);
+    // Saplings and seeds-specific base values per rarity (BASIC..RARE)
+    private static final Map<Rarity, Double> perRarityBaseSaplingsSeeds = new EnumMap<>(Rarity.class);
     private static ConfigurationSection overridesSection;
     // New: rarity overrides by material via overrides.Blocks/Craftables
     private static final Map<Material, Rarity> rarityOverrides = new HashMap<>();
@@ -52,8 +56,12 @@ public final class Pricing {
         if (section == null) {
             section = plugin.getConfig().createSection("pricing");
         }
-        ConfigurationSection perRarity = section.getConfigurationSection("per_rarity_base");
-        if (perRarity == null) perRarity = section.createSection("per_rarity_base");
+        // Primary location (new): pricing.per_rarity_base_craftables; Legacy fallback: pricing.per_rarity_base
+        ConfigurationSection perRarity = section.getConfigurationSection("per_rarity_base_craftables");
+        if (perRarity == null) {
+            perRarity = section.getConfigurationSection("per_rarity_base");
+        }
+        if (perRarity == null) perRarity = section.createSection("per_rarity_base_craftables");
         // Load with sensible defaults if missing
         perRarityBase.put(Rarity.BASIC, perRarity.getDouble("BASIC", 2.0));
         perRarityBase.put(Rarity.COMMON, perRarity.getDouble("COMMON", 5.0));
@@ -195,6 +203,46 @@ public final class Pricing {
         // MYTHIC defaults to LEGENDARY
         perRarityBaseSpawnEggs.put(Rarity.MYTHIC, perRaritySpawnEggs.getDouble("MYTHIC", perRarityBase.get(Rarity.LEGENDARY)));
 
+        // Saplings and seeds-specific per-rarity base (BASIC..RARE)
+        ConfigurationSection overridesRootForSaplings = section.getConfigurationSection("overrides");
+        ConfigurationSection craftablesRoot = overridesRootForSaplings != null ? overridesRootForSaplings.getConfigurationSection("Craftables") : null;
+        ConfigurationSection perRaritySaplingsSeeds = null;
+        if (craftablesRoot != null) {
+            perRaritySaplingsSeeds = craftablesRoot.getConfigurationSection("per_rarity_base_saplings_seeds");
+            if (perRaritySaplingsSeeds == null) {
+                // accept alias with "and"
+                perRaritySaplingsSeeds = craftablesRoot.getConfigurationSection("per_rarity_base_saplings_and_seeds");
+            }
+        }
+        if (perRaritySaplingsSeeds == null) {
+            // create under overrides.Craftables for persistence with sensible defaults
+            if (craftablesRoot == null) {
+                overridesRootForSaplings = overridesRootForSaplings == null ? section.createSection("overrides") : overridesRootForSaplings;
+                craftablesRoot = overridesRootForSaplings.getConfigurationSection("Craftables");
+                if (craftablesRoot == null) craftablesRoot = overridesRootForSaplings.createSection("Craftables");
+            }
+            perRaritySaplingsSeeds = craftablesRoot.createSection("per_rarity_base_saplings_seeds");
+        }
+        perRarityBaseSaplingsSeeds.put(Rarity.BASIC, perRaritySaplingsSeeds.getDouble("BASIC", perRarityBase.get(Rarity.BASIC)));
+        perRarityBaseSaplingsSeeds.put(Rarity.COMMON, perRaritySaplingsSeeds.getDouble("COMMON", perRarityBase.get(Rarity.COMMON)));
+        perRarityBaseSaplingsSeeds.put(Rarity.UNCOMMON, perRaritySaplingsSeeds.getDouble("UNCOMMON", perRarityBase.get(Rarity.UNCOMMON)));
+        perRarityBaseSaplingsSeeds.put(Rarity.RARE, perRaritySaplingsSeeds.getDouble("RARE", perRarityBase.get(Rarity.RARE)));
+
+        // Enchantment books-specific per-rarity base (BASIC..RARE). Primary: pricing.per_rarity_base_enchantment_books
+        ConfigurationSection perRarityEnchBooks = section.getConfigurationSection("per_rarity_base_enchantment_books");
+        if (perRarityEnchBooks == null) {
+            // Optional supported location: pricing.overrides.per_rarity_base_enchantment_books
+            ConfigurationSection overridesRoot = section.getConfigurationSection("overrides");
+            if (overridesRoot != null) {
+                perRarityEnchBooks = overridesRoot.getConfigurationSection("per_rarity_base_enchantment_books");
+            }
+        }
+        if (perRarityEnchBooks == null) perRarityEnchBooks = section.createSection("per_rarity_base_enchantment_books");
+        perRarityBaseEnchantmentBooks.put(Rarity.BASIC, perRarityEnchBooks.getDouble("BASIC", perRarityBase.get(Rarity.BASIC)));
+        perRarityBaseEnchantmentBooks.put(Rarity.COMMON, perRarityEnchBooks.getDouble("COMMON", perRarityBase.get(Rarity.COMMON)));
+        perRarityBaseEnchantmentBooks.put(Rarity.UNCOMMON, perRarityEnchBooks.getDouble("UNCOMMON", perRarityBase.get(Rarity.UNCOMMON)));
+        perRarityBaseEnchantmentBooks.put(Rarity.RARE, perRarityEnchBooks.getDouble("RARE", perRarityBase.get(Rarity.RARE)));
+
         overridesSection = section.getConfigurationSection("overrides");
         // Parse rarity overrides from overrides.Blocks and Craftables
         rarityOverrides.clear();
@@ -329,18 +377,20 @@ public final class Pricing {
             }
         }
 
-        // Persist defaults back if not present
-        perRarity.set("BASIC", perRarityBase.get(Rarity.BASIC));
-        perRarity.set("COMMON", perRarityBase.get(Rarity.COMMON));
-        perRarity.set("UNCOMMON", perRarityBase.get(Rarity.UNCOMMON));
-        perRarity.set("RARE", perRarityBase.get(Rarity.RARE));
-        perRarity.set("EPIC", perRarityBase.get(Rarity.EPIC));
-        perRarity.set("NETHERITE_BLOCK", perRarityBase.get(Rarity.NETHERITE_BLOCK));
-        perRarity.set("NETHERITE_SCRAP", perRarityBase.get(Rarity.NETHERITE_SCRAP));
-        perRarity.set("NETHERITE_INGOT", perRarityBase.get(Rarity.NETHERITE_INGOT));
-        perRarity.set("LEGENDARY", perRarityBase.get(Rarity.LEGENDARY));
-        perRarity.set("ELYTRA", perRarityBase.get(Rarity.ELYTRA));
-        perRarity.set("ANCIENT_DEBRIS", perRarityBase.get(Rarity.ANCIENT_DEBRIS));
+        // Persist defaults back under new key pricing.per_rarity_base_craftables
+        ConfigurationSection perRarityOut = section.getConfigurationSection("per_rarity_base_craftables");
+        if (perRarityOut == null) perRarityOut = section.createSection("per_rarity_base_craftables");
+        perRarityOut.set("BASIC", perRarityBase.get(Rarity.BASIC));
+        perRarityOut.set("COMMON", perRarityBase.get(Rarity.COMMON));
+        perRarityOut.set("UNCOMMON", perRarityBase.get(Rarity.UNCOMMON));
+        perRarityOut.set("RARE", perRarityBase.get(Rarity.RARE));
+        perRarityOut.set("EPIC", perRarityBase.get(Rarity.EPIC));
+        perRarityOut.set("NETHERITE_BLOCK", perRarityBase.get(Rarity.NETHERITE_BLOCK));
+        perRarityOut.set("NETHERITE_SCRAP", perRarityBase.get(Rarity.NETHERITE_SCRAP));
+        perRarityOut.set("NETHERITE_INGOT", perRarityBase.get(Rarity.NETHERITE_INGOT));
+        perRarityOut.set("LEGENDARY", perRarityBase.get(Rarity.LEGENDARY));
+        perRarityOut.set("ELYTRA", perRarityBase.get(Rarity.ELYTRA));
+        perRarityOut.set("ANCIENT_DEBRIS", perRarityBase.get(Rarity.ANCIENT_DEBRIS));
         // If user had the misspelled key, clean it up
         if (perRarity.isSet("LEGANDERY")) perRarity.set("LEGANDERY", null);
 
@@ -396,6 +446,14 @@ public final class Pricing {
         perRaritySpawnEggsOut.set("EPIC", perRarityBaseSpawnEggs.get(Rarity.EPIC));
         perRaritySpawnEggsOut.set("LEGENDARY", perRarityBaseSpawnEggs.get(Rarity.LEGENDARY));
         perRaritySpawnEggsOut.set("MYTHIC", perRarityBaseSpawnEggs.get(Rarity.MYTHIC));
+
+        // Save enchantment books per-rarity base as well
+        ConfigurationSection perRarityEnchBooksOut = section.getConfigurationSection("per_rarity_base_enchantment_books");
+        if (perRarityEnchBooksOut == null) perRarityEnchBooksOut = section.createSection("per_rarity_base_enchantment_books");
+        perRarityEnchBooksOut.set("BASIC", perRarityBaseEnchantmentBooks.get(Rarity.BASIC));
+        perRarityEnchBooksOut.set("COMMON", perRarityBaseEnchantmentBooks.get(Rarity.COMMON));
+        perRarityEnchBooksOut.set("UNCOMMON", perRarityBaseEnchantmentBooks.get(Rarity.UNCOMMON));
+        perRarityEnchBooksOut.set("RARE", perRarityBaseEnchantmentBooks.get(Rarity.RARE));
 
         plugin.saveConfig();
     }
@@ -457,7 +515,7 @@ public final class Pricing {
         } else if (mat == Material.ENCHANTED_BOOK) {
             // Enchanted book: determine rarity based on stored enchantments using overrides.EnchantmentBooks
             Rarity chosen = Rarity.COMMON;
-            double best = perRarityBase.getOrDefault(chosen, 5.0);
+            double best = perRarityBaseEnchantmentBooks.getOrDefault(chosen, perRarityBase.getOrDefault(chosen, 5.0));
             try {
                 if (item.hasItemMeta() && item.getItemMeta() instanceof EnchantmentStorageMeta) {
                     EnchantmentStorageMeta meta = (EnchantmentStorageMeta) item.getItemMeta();
@@ -466,7 +524,7 @@ public final class Pricing {
                         for (Enchantment ench : enchants.keySet()) {
                             Rarity er = enchantmentRarityOverrides.get(ench);
                             if (er == null) er = Rarity.COMMON; // fallback if not specified
-                            double val = perRarityBase.getOrDefault(er, 5.0);
+                            double val = perRarityBaseEnchantmentBooks.getOrDefault(er, perRarityBase.getOrDefault(er, 5.0));
                             if (val > best) {
                                 best = val;
                                 chosen = er;
@@ -477,7 +535,7 @@ public final class Pricing {
             } catch (Throwable ignored) {
                 // If API differs, fall back to common
             }
-            perUnit = perRarityBase.getOrDefault(chosen, 5.0);
+            perUnit = perRarityBaseEnchantmentBooks.getOrDefault(chosen, perRarityBase.getOrDefault(chosen, 5.0));
         } else {
             // Next, check rarity override from blocks/craftables category
             Rarity rOverride = rarityOverrides.get(mat);
@@ -489,6 +547,8 @@ public final class Pricing {
                 baseMap = perRarityBaseOres;
             } else if (isSpawnEgg(mat)) {
                 baseMap = perRarityBaseSpawnEggs;
+            } else if (isSaplingOrSeed(mat)) {
+                baseMap = perRarityBaseSaplingsSeeds;
             } else if (mat.isBlock()) {
                 baseMap = perRarityBaseBlocks;
             } else {
@@ -597,5 +657,30 @@ public final class Pricing {
     private static boolean isSpawnEgg(Material mat) {
         // Bukkit names for spawn eggs always end with _SPAWN_EGG
         return mat.name().endsWith("_SPAWN_EGG");
+    }
+
+    private static boolean isSaplingOrSeed(Material mat) {
+        switch (mat) {
+            case OAK_SAPLING:
+            case SPRUCE_SAPLING:
+            case BIRCH_SAPLING:
+            case JUNGLE_SAPLING:
+            case ACACIA_SAPLING:
+            case DARK_OAK_SAPLING:
+            case CHERRY_SAPLING:
+            case PALE_OAK_SAPLING:
+            case MANGROVE_PROPAGULE:
+            case CRIMSON_FUNGUS:
+            case WARPED_FUNGUS:
+            case WHEAT_SEEDS:
+            case BEETROOT_SEEDS:
+            case PUMPKIN_SEEDS:
+            case MELON_SEEDS:
+            case TORCHFLOWER_SEEDS:
+            case PITCHER_POD:
+                return true;
+            default:
+                return false;
+        }
     }
 }
