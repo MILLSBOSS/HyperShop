@@ -11,6 +11,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -33,29 +34,44 @@ public class ShopListener implements Listener {
         this.plugin = plugin;
     }
 
-    private boolean isMainTitle(String title) {
+    private boolean isMain(Inventory inv, String title) {
+        if (inv != null && inv.getHolder() instanceof ShopHolder) {
+            return Constants.GUI_MAIN.equals(((ShopHolder) inv.getHolder()).getType());
+        }
         String t = ChatColor.stripColor(title);
         return t.equalsIgnoreCase("EcoShopPro");
     }
 
-    private boolean isCategoryTitle(String title) {
+    private boolean isCategory(Inventory inv, String title) {
+        if (inv != null && inv.getHolder() instanceof ShopHolder) {
+            return Constants.GUI_CATEGORY.equals(((ShopHolder) inv.getHolder()).getType());
+        }
         String t = ChatColor.stripColor(title);
         return t.contains(" - Page ");
     }
 
-    private boolean isMyListingsTitle(String title) {
+    private boolean isMyListings(Inventory inv, String title) {
+        if (inv != null && inv.getHolder() instanceof ShopHolder) {
+            return Constants.GUI_MY_LISTINGS.equals(((ShopHolder) inv.getHolder()).getType());
+        }
         String t = ChatColor.stripColor(title);
         return t.startsWith("My Listings - Page ");
     }
 
-    private int parsePage(String title) {
+    private int parsePage(Inventory inv, String title) {
+        if (inv != null && inv.getHolder() instanceof ShopHolder) {
+            return Math.max(0, ((ShopHolder) inv.getHolder()).getPage());
+        }
         String t = ChatColor.stripColor(title);
         int idx = t.lastIndexOf("Page ");
         if (idx == -1) return 0;
         try { return Integer.parseInt(t.substring(idx + 5).trim()) - 1; } catch (Exception e) { return 0; }
     }
 
-    private Category parseCategory(String title) {
+    private Category parseCategory(Inventory inv, String title) {
+        if (inv != null && inv.getHolder() instanceof ShopHolder) {
+            return ((ShopHolder) inv.getHolder()).getCategory();
+        }
         String t = ChatColor.stripColor(title);
         if (!t.contains(" - Page ")) return null;
         String name = t.substring(0, t.indexOf(" - Page "));
@@ -65,7 +81,7 @@ public class ShopListener implements Listener {
         return null;
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent e) {
         if (!(e.getWhoClicked() instanceof Player)) return;
         Player p = (Player) e.getWhoClicked();
@@ -73,7 +89,7 @@ public class ShopListener implements Listener {
         if (inv == null) return;
         String title = e.getView().getTitle();
 
-        if (isMainTitle(title)) {
+        if (isMain(inv, title)) {
             int slot = e.getRawSlot();
             // Prevent shift-clicking items from player inventory into the GUI
             if (e.getClickedInventory() != null && !e.getClickedInventory().equals(inv)) {
@@ -150,7 +166,7 @@ public class ShopListener implements Listener {
                 }
                 e.setCancelled(true);
             }
-        } else if (isMyListingsTitle(title)) {
+        } else if (isMyListings(inv, title)) {
             int slot = e.getRawSlot();
             if (slot < inv.getSize()) {
                 ItemStack clicked = e.getCurrentItem();
@@ -163,13 +179,13 @@ public class ShopListener implements Listener {
                 }
                 if (name.equalsIgnoreCase("Previous Page")) {
                     e.setCancelled(true);
-                    int page = parsePage(title);
+                    int page = parsePage(inv, title);
                     if (page > 0) ShopMenus.openMyListings(p, page - 1);
                     return;
                 }
                 if (name.equalsIgnoreCase("Next Page")) {
                     e.setCancelled(true);
-                    int page = parsePage(title);
+                    int page = parsePage(inv, title);
                     ShopMenus.openMyListings(p, page + 1);
                     return;
                 }
@@ -185,12 +201,12 @@ public class ShopListener implements Listener {
                     HashMap<Integer, ItemStack> left = p.getInventory().addItem(toGive);
                     for (ItemStack rem : left.values()) p.getWorld().dropItemNaturally(p.getLocation(), rem);
                     p.sendMessage(ChatColor.YELLOW + "Listing removed and item returned.");
-                    ShopMenus.openMyListings(p, parsePage(title));
+                    ShopMenus.openMyListings(p, parsePage(inv, title));
                     return;
                 }
                 e.setCancelled(true);
             }
-        } else if (isCategoryTitle(title)) {
+        } else if (isCategory(inv, title)) {
             int slot = e.getRawSlot();
             if (slot < inv.getSize()) {
                 ItemStack clicked = e.getCurrentItem();
@@ -205,15 +221,15 @@ public class ShopListener implements Listener {
                 // Navigation
                 if (name.equalsIgnoreCase("Previous Page")) {
                     e.setCancelled(true);
-                    int page = parsePage(title);
-                    Category cat = parseCategory(title);
+                    int page = parsePage(inv, title);
+                    Category cat = parseCategory(inv, title);
                     if (cat != null && page > 0) ShopMenus.openCategory(p, cat, page - 1);
                     return;
                 }
                 if (name.equalsIgnoreCase("Next Page")) {
                     e.setCancelled(true);
-                    int page = parsePage(title);
-                    Category cat = parseCategory(title);
+                    int page = parsePage(inv, title);
+                    Category cat = parseCategory(inv, title);
                     if (cat != null) ShopMenus.openCategory(p, cat, page + 1);
                     return;
                 }
@@ -223,15 +239,15 @@ public class ShopListener implements Listener {
                     e.setCancelled(true);
                     ListingsManager lm = plugin.getListingsManager();
                     Listing l = lm.getById(id);
-                    if (l == null) { p.sendMessage(ChatColor.RED + "That listing is no longer available."); ShopMenus.openCategory(p, parseCategory(title), parsePage(title)); return; }
+                    if (l == null) { p.sendMessage(ChatColor.RED + "That listing is no longer available."); ShopMenus.openCategory(p, parseCategory(inv, title), parsePage(inv, title)); return; }
                     // Prevent buying own listing
                     if (l.getSeller().equals(p.getUniqueId())) {
                         p.sendMessage(ChatColor.RED + "You cannot buy your own listing.");
-                        ShopMenus.openCategory(p, parseCategory(title), parsePage(title));
+                        ShopMenus.openCategory(p, parseCategory(inv, title), parsePage(inv, title));
                         return;
                     }
-                    Category cat = parseCategory(title);
-                    int page = parsePage(title);
+                    Category cat = parseCategory(inv, title);
+                    int page = parsePage(inv, title);
                     ShopMenus.openConfirm(p, l, cat, page, 1);
                     return;
                 }
@@ -336,14 +352,14 @@ public class ShopListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onInventoryDrag(InventoryDragEvent e) {
         if (!(e.getWhoClicked() instanceof Player)) return;
         Player p = (Player) e.getWhoClicked();
         Inventory top = e.getView().getTopInventory();
         if (top == null) return;
         String title = e.getView().getTitle();
-        if (!isMainTitle(title)) return;
+        if (!isMain(top, title)) return;
 
         // Identify which raw slots of the TOP inventory would be affected by this drag
         // Cancel if any top-inventory slot other than the sell or server sell slot is targeted
@@ -388,7 +404,7 @@ public class ShopListener implements Listener {
         Player p = (Player) e.getWhoClicked();
         Inventory inv = e.getView().getTopInventory();
         String title = e.getView().getTitle();
-        if (inv == null || !isMainTitle(title)) return;
+        if (inv == null || !isMain(inv, title)) return;
         if (e.getAction() == InventoryAction.PLACE_ALL || e.getAction() == InventoryAction.SWAP_WITH_CURSOR || e.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY || e.getAction() == InventoryAction.PLACE_SOME || e.getAction() == InventoryAction.PLACE_ONE) {
             if (e.getRawSlot() == 49) {
                 if (pendingSell.containsKey(p.getUniqueId())) {
@@ -406,7 +422,7 @@ public class ShopListener implements Listener {
     private void handleSellSlotItem(Player p) {
         Inventory inv = p.getOpenInventory().getTopInventory();
         String title = p.getOpenInventory().getTitle();
-        if (inv == null || !isMainTitle(title)) return;
+        if (inv == null || !isMain(inv, title)) return;
         ItemStack inSell = inv.getItem(49);
         if (inSell == null || inSell.getType() == Material.AIR) return;
         // Ignore if it's our tagged placeholder
@@ -439,7 +455,7 @@ public class ShopListener implements Listener {
     private void handleServerSellSlotItem(Player p) {
         Inventory inv = p.getOpenInventory().getTopInventory();
         String title = p.getOpenInventory().getTitle();
-        if (inv == null || !isMainTitle(title)) return;
+        if (inv == null || !isMain(inv, title)) return;
         ItemStack inSell = inv.getItem(45);
         if (inSell == null || inSell.getType() == Material.AIR) return;
         // Ignore if it's our tagged placeholder
@@ -497,7 +513,7 @@ public class ShopListener implements Listener {
                     for (ItemStack rem : left.values()) p.getWorld().dropItemNaturally(p.getLocation(), rem);
                 }
                 p.sendMessage(ChatColor.YELLOW + "Sale cancelled.");
-                if (p.getOpenInventory() != null && isMainTitle(p.getOpenInventory().getTitle())) {
+                if (p.getOpenInventory() != null && isMain(p.getOpenInventory().getTopInventory(), p.getOpenInventory().getTitle())) {
                     ShopMenus.openMain(p);
                 }
             });

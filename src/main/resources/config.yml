@@ -37,6 +37,24 @@ pricing:
     # DIAMOND: 150.0
     # DIRT: 1.0
 
+    # Resource Blocks (uses pricing.per_rarity_base_resource_blocks)
+    per_rarity_base_resource_blocks:
+      BASIC: 45
+      COMMON: 65
+      UNCOMMON: 0.40
+      RARE: 165
+
+    ResourceBlocks:
+      GOLD_BLOCK: basic
+      IRON_BLOCK: basic
+      REDSTONE_BLOCK: basic
+      LAPIS_BLOCK: common
+      EMERALD_BLOCK: rare
+      DIAMOND_BLOCK: rare
+      COPPER_BLOCK: basic
+      COAL_BLOCK: common
+      NETHERITE_BLOCK: NETHERITE_BLOCK
+
     # General (uses pricing.per_rarity_base_craftables unless otherwise noted)
     # Craftables: items and blocks crafted by players.
     # Armor entries here will use pricing.per_rarity_base_armor; craftable blocks will use pricing.per_rarity_base_blocks;
@@ -176,6 +194,8 @@ pricing:
 
       # Basic materials and misc
       STICK: basic
+      FEATHER: basic
+      SHULKER_SHELL: uncommon
       BOWL: common
       BUCKET: common
       GLASS_BOTTLE: common
@@ -345,20 +365,12 @@ pricing:
       BEACON: legendary
       CONDUIT: legendary
       END_CRYSTAL: epic
-      NETHERITE_BLOCK: NETHERITE_BLOCK
       TOTEM_OF_UNDYING: epic
       RESPAWN_ANCHOR: rare
       TNT: basic
       HAY_BLOCK: basic
       CARPET: basic
       CAULDRON: basic
-      DIAMOND_BLOCK: rare
-      EMERALD_BLOCK: rare
-      GOLD_BLOCK: uncommon
-      IRON_BLOCK: uncommon
-      REDSTONE_BLOCK: common
-      LAPIS_BLOCK: common
-      COAL_BLOCK: common
       DRIED_KELP_BLOCK: basic
 
       # Doors and trapdoors - Iron and more
@@ -1141,7 +1153,6 @@ pricing:
       GREEN_DYE: basic
       RED_DYE: basic
       BLACK_DYE: basic
-      COPPER_BLOCK: common
       CUT_COPPER: common
       CUT_COPPER_SLAB: common
       CUT_COPPER_STAIRS: uncommon

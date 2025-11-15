@@ -43,7 +43,7 @@ public final class ShopMenus {
     private ShopMenus() {}
 
     public static void openMain(Player p) {
-        Inventory inv = Bukkit.createInventory(p, 54, ChatColor.GREEN + "EcoShopPro");
+        Inventory inv = Bukkit.createInventory(new ShopHolder(Constants.GUI_MAIN, null, 0), 54, ChatColor.GREEN + "EcoShopPro");
         tagInventory(inv, Constants.GUI_MAIN, null, -1);
         // Fill with categories
         int[] catSlots = new int[]{10,11,12,13,14,15,16,19,20,21,22,23};
@@ -77,7 +77,7 @@ public final class ShopMenus {
     }
 
     public static void openCategory(Player p, Category category, int page) {
-        Inventory inv = Bukkit.createInventory(p, 54, ChatColor.YELLOW + category.getDisplay() + ChatColor.GRAY + " - Page " + (page+1));
+        Inventory inv = Bukkit.createInventory(new ShopHolder(Constants.GUI_CATEGORY, category, page), 54, ChatColor.YELLOW + category.getDisplay() + ChatColor.GRAY + " - Page " + (page+1));
         tagInventory(inv, Constants.GUI_CATEGORY, category, page);
         // Fetch listings and paginate
         ListingsManager lm = EcoShopPro.getInstance().getListingsManager();
@@ -98,7 +98,7 @@ public final class ShopMenus {
     }
 
     public static void openMyListings(Player p, int page) {
-        Inventory inv = Bukkit.createInventory(p, 54, ChatColor.AQUA + "My Listings - Page " + (page+1));
+        Inventory inv = Bukkit.createInventory(new ShopHolder(Constants.GUI_MY_LISTINGS, null, page), 54, ChatColor.AQUA + "My Listings - Page " + (page+1));
         tagInventory(inv, Constants.GUI_MY_LISTINGS, null, page);
         ListingsManager lm = EcoShopPro.getInstance().getListingsManager();
         List<Listing> mine = lm.getBySeller(p.getUniqueId());
@@ -280,7 +280,7 @@ public final class ShopMenus {
         } catch (Throwable ignored) {}
 
         int size = isShulker ? 54 : 45;
-        Inventory inv = Bukkit.createInventory(p, size, ChatColor.GOLD + "Confirm Purchase");
+        Inventory inv = Bukkit.createInventory(new ShopHolder(Constants.GUI_CONFIRM, category, page), size, ChatColor.GOLD + "Confirm Purchase");
 
         // Display the item with selected quantity
         ItemStack display = l.getItem().clone();

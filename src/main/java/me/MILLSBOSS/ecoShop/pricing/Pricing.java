@@ -47,6 +47,9 @@ public final class Pricing {
     // Default rarity for a plain spawner (no entity set)
     private static Rarity defaultSpawnerRarity = Rarity.RARE;
 
+    // Dedicated base maps for different item families
+    private static final Map<Rarity, Double> perRarityBaseResourceBlocks = new EnumMap<>(Rarity.class);
+
     private Pricing() {}
 
     public static void load(EcoShopPro plugin) {
@@ -142,6 +145,26 @@ public final class Pricing {
         perRarityBaseBlocks.put(Rarity.EPIC, perRarityBase.get(Rarity.EPIC));
         perRarityBaseBlocks.put(Rarity.LEGENDARY, perRarityBase.get(Rarity.LEGENDARY));
         perRarityBaseBlocks.put(Rarity.MYTHIC, perRarityBase.get(Rarity.LEGENDARY));
+
+        // Resource Blocks-specific per-rarity base (for GOLD_BLOCK, IRON_BLOCK, etc.)
+        // Primary location: pricing.per_rarity_base_resource_blocks
+        ConfigurationSection perRarityResourceBlocks = section.getConfigurationSection("per_rarity_base_resource_blocks");
+        if (perRarityResourceBlocks == null) {
+            // Support new location under overrides (placed directly above overrides.ResourceBlocks in config.yml)
+            ConfigurationSection overridesRoot = section.getConfigurationSection("overrides");
+            if (overridesRoot != null) {
+                perRarityResourceBlocks = overridesRoot.getConfigurationSection("per_rarity_base_resource_blocks");
+            }
+        }
+        if (perRarityResourceBlocks == null) perRarityResourceBlocks = section.createSection("per_rarity_base_resource_blocks");
+        // Only BASIC..RARE are defined here; higher tiers fall back to general per_rarity_base similar to normal blocks
+        perRarityBaseResourceBlocks.put(Rarity.BASIC, perRarityResourceBlocks.getDouble("BASIC", perRarityBaseBlocks.getOrDefault(Rarity.BASIC, perRarityBase.get(Rarity.BASIC))));
+        perRarityBaseResourceBlocks.put(Rarity.COMMON, perRarityResourceBlocks.getDouble("COMMON", perRarityBaseBlocks.getOrDefault(Rarity.COMMON, perRarityBase.get(Rarity.COMMON))));
+        perRarityBaseResourceBlocks.put(Rarity.UNCOMMON, perRarityResourceBlocks.getDouble("UNCOMMON", perRarityBaseBlocks.getOrDefault(Rarity.UNCOMMON, perRarityBase.get(Rarity.UNCOMMON))));
+        perRarityBaseResourceBlocks.put(Rarity.RARE, perRarityResourceBlocks.getDouble("RARE", perRarityBaseBlocks.getOrDefault(Rarity.RARE, perRarityBase.get(Rarity.RARE))));
+        perRarityBaseResourceBlocks.put(Rarity.EPIC, perRarityBase.get(Rarity.EPIC));
+        perRarityBaseResourceBlocks.put(Rarity.LEGENDARY, perRarityBase.get(Rarity.LEGENDARY));
+        perRarityBaseResourceBlocks.put(Rarity.MYTHIC, perRarityBase.get(Rarity.LEGENDARY));
 
         // Ores-specific per-rarity base, defaults to general per_rarity_base if missing
         // Primary location (legacy): pricing.per_rarity_base_ores
@@ -279,6 +302,25 @@ public final class Pricing {
                     String rarityStr = craftables.getString(key);
                     if (rarityStr == null || rarityStr.trim().isEmpty()) {
                         // default to COMMON if unspecified
+                        rarityOverrides.put(mat, Rarity.COMMON);
+                        continue;
+                    }
+                    Rarity r = parseRarity(rarityStr);
+                    if (r != null) {
+                        rarityOverrides.put(mat, r);
+                    }
+                }
+            }
+            // New: parse overrides.ResourceBlocks (storage/resource blocks like GOLD_BLOCK, IRON_BLOCK, etc.)
+            ConfigurationSection resourceBlocks = overridesSection.getConfigurationSection("ResourceBlocks");
+            if (resourceBlocks != null) {
+                for (String key : resourceBlocks.getKeys(false)) {
+                    if (key == null) continue;
+                    String materialKey = key.trim().toUpperCase(Locale.ROOT);
+                    Material mat = Material.matchMaterial(materialKey);
+                    if (mat == null) continue; // skip unknown materials
+                    String rarityStr = resourceBlocks.getString(key);
+                    if (rarityStr == null || rarityStr.trim().isEmpty()) {
                         rarityOverrides.put(mat, Rarity.COMMON);
                         continue;
                     }
@@ -455,6 +497,14 @@ public final class Pricing {
         perRarityEnchBooksOut.set("UNCOMMON", perRarityBaseEnchantmentBooks.get(Rarity.UNCOMMON));
         perRarityEnchBooksOut.set("RARE", perRarityBaseEnchantmentBooks.get(Rarity.RARE));
 
+        // Persist defaults back for resource blocks base
+        ConfigurationSection perRarityResourceBlocksOut = section.getConfigurationSection("per_rarity_base_resource_blocks");
+        if (perRarityResourceBlocksOut == null) perRarityResourceBlocksOut = section.createSection("per_rarity_base_resource_blocks");
+        perRarityResourceBlocksOut.set("BASIC", perRarityBaseResourceBlocks.get(Rarity.BASIC));
+        perRarityResourceBlocksOut.set("COMMON", perRarityBaseResourceBlocks.get(Rarity.COMMON));
+        perRarityResourceBlocksOut.set("UNCOMMON", perRarityBaseResourceBlocks.get(Rarity.UNCOMMON));
+        perRarityResourceBlocksOut.set("RARE", perRarityBaseResourceBlocks.get(Rarity.RARE));
+
         plugin.saveConfig();
     }
 
@@ -549,6 +599,8 @@ public final class Pricing {
                 baseMap = perRarityBaseSpawnEggs;
             } else if (isSaplingOrSeed(mat)) {
                 baseMap = perRarityBaseSaplingsSeeds;
+            } else if (isResourceBlock(mat)) {
+                baseMap = perRarityBaseResourceBlocks;
             } else if (mat.isBlock()) {
                 baseMap = perRarityBaseBlocks;
             } else {
@@ -556,11 +608,13 @@ public final class Pricing {
             }
             Double val = baseMap.get(r);
             if (val == null) {
-                // If this is a block, ensure we still base the price on per_rarity_base_blocks by
-                // falling back to the RARE tier from the blocks map (highest defined tier there),
+                // If this is a (resource) block, ensure we still base the price on its block map by
+                // falling back to the RARE tier from that map (highest defined tier there),
                 // instead of jumping to the general per_rarity_base values.
                 if (baseMap == perRarityBaseBlocks) {
                     val = perRarityBaseBlocks.get(Rarity.RARE);
+                } else if (baseMap == perRarityBaseResourceBlocks) {
+                    val = perRarityBaseResourceBlocks.get(Rarity.RARE);
                 }
             }
             // Final fallback to general per_rarity_base (for truly special cases with no block base available)
@@ -678,6 +732,23 @@ public final class Pricing {
             case MELON_SEEDS:
             case TORCHFLOWER_SEEDS:
             case PITCHER_POD:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private static boolean isResourceBlock(Material mat) {
+        switch (mat) {
+            case GOLD_BLOCK:
+            case IRON_BLOCK:
+            case REDSTONE_BLOCK:
+            case LAPIS_BLOCK:
+            case EMERALD_BLOCK:
+            case DIAMOND_BLOCK:
+            case COPPER_BLOCK:
+            case COAL_BLOCK:
+            case NETHERITE_BLOCK:
                 return true;
             default:
                 return false;

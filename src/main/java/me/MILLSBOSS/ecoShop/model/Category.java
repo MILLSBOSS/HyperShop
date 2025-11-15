@@ -36,6 +36,23 @@ public enum Category {
         // Direct mappings for special categories
         if (mat == Material.SPAWNER) return SPAWNERS;
         if (mat == Material.ENCHANTED_BOOK) return ENCHANTMENT_BOOKS;
+        // Eggs should appear under Food
+        if (mat == Material.EGG) return FOOD;
+        // Ensure storage/resource blocks appear under the Ores page
+        switch (mat) {
+            case GOLD_BLOCK:
+            case IRON_BLOCK:
+            case REDSTONE_BLOCK:
+            case LAPIS_BLOCK:
+            case EMERALD_BLOCK:
+            case DIAMOND_BLOCK:
+            case COPPER_BLOCK:
+            case COAL_BLOCK:
+            case NETHERITE_BLOCK:
+                return ORES;
+            default:
+                // continue to heuristics below
+        }
         // Simple heuristic to categorize based on material name
         String n = mat.name();
         if (n.contains("SWORD") || n.contains("BOW") || n.contains("CROSSBOW") || n.contains("TRIDENT")) return WEAPONS;
