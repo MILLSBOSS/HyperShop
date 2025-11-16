@@ -371,7 +371,7 @@ public class ShopListener implements Listener {
             if (raw < top.getSize()) { // inside top inventory GUI
                 affectsTop = true;
                 if (raw == 49) affectsSell = true;
-                else if (raw == 48) affectsServerSell = true;
+                else if (ShopMenus.isServerSellSlot(raw)) affectsServerSell = true;
                 else { affectsOnlySupported = false; break; }
             }
         }
@@ -392,7 +392,7 @@ public class ShopListener implements Listener {
             e.setCancelled(false);
             Bukkit.getScheduler().runTask(plugin, () -> handleSellSlotItem(p));
         }
-        if (affectsServerSell && e.getRawSlots().contains(48)) {
+        if (affectsServerSell && e.getRawSlots().stream().anyMatch(ShopMenus::isServerSellSlot)) {
             e.setCancelled(false);
             Bukkit.getScheduler().runTask(plugin, () -> handleServerSellSlotItem(p));
         }
@@ -413,7 +413,7 @@ public class ShopListener implements Listener {
                 } else {
                     Bukkit.getScheduler().runTask(plugin, () -> handleSellSlotItem(p));
                 }
-            } else if (e.getRawSlot() == 48) {
+            } else if (ShopMenus.isServerSellSlot(e.getRawSlot())) {
                 Bukkit.getScheduler().runTask(plugin, () -> handleServerSellSlotItem(p));
             }
         }
