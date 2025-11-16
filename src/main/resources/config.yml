@@ -57,8 +57,8 @@ pricing:
 
     # Ingots-specific base price per unit for each rarity. Applies to standalone ingots.
     per_rarity_base_ingots:
-      BASIC: 15
-      COMMON: 35
+      BASIC: 10
+      COMMON: 15
       UNCOMMON: 85
       RARE: 165
       EPIC: 2000.0
@@ -67,9 +67,9 @@ pricing:
 
     # Ingots (uses pricing.per_rarity_base_ingots)
     Ingots:
-      IRON_INGOT: uncommon
-      COPPER_INGOT: common
-      GOLD_INGOT: uncommon
+      IRON_INGOT: basic
+      COPPER_INGOT: basic
+      GOLD_INGOT: common
       NETHERITE_INGOT: NETHERITE_INGOT
 
     # General (uses pricing.per_rarity_base_craftables unless otherwise noted)
