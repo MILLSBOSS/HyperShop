@@ -55,6 +55,23 @@ pricing:
       COAL_BLOCK: common
       NETHERITE_BLOCK: NETHERITE_BLOCK
 
+    # Ingots-specific base price per unit for each rarity. Applies to standalone ingots.
+    per_rarity_base_ingots:
+      BASIC: 15
+      COMMON: 35
+      UNCOMMON: 85
+      RARE: 165
+      EPIC: 2000.0
+      LEGENDARY: 100000.0
+      MYTHIC: 150000.0
+
+    # Ingots (uses pricing.per_rarity_base_ingots)
+    Ingots:
+      IRON_INGOT: uncommon
+      COPPER_INGOT: common
+      GOLD_INGOT: uncommon
+      NETHERITE_INGOT: NETHERITE_INGOT
+
     # General (uses pricing.per_rarity_base_craftables unless otherwise noted)
     # Craftables: items and blocks crafted by players.
     # Armor entries here will use pricing.per_rarity_base_armor; craftable blocks will use pricing.per_rarity_base_blocks;
@@ -1306,11 +1323,8 @@ pricing:
       # Common ore drops
       COAL: basic
       RAW_IRON: common
-      IRON_INGOT: uncommon
       RAW_COPPER: basic
-      COPPER_INGOT: common
       RAW_GOLD: uncommon
-      GOLD_INGOT: uncommon
       REDSTONE: common
       LAPIS_LAZULI: uncommon
       DIAMOND: rare
@@ -1318,7 +1332,6 @@ pricing:
       QUARTZ: common
       AMETHYST_SHARD: uncommon
       NETHERITE_SCRAP: NETHERITE_SCRAP
-      NETHERITE_INGOT: NETHERITE_INGOT
 
       # Nether ores
       NETHER_QUARTZ_ORE: common

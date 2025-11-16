@@ -29,6 +29,8 @@ public final class Pricing {
     private static final Map<Rarity, Double> perRarityBaseBlocks = new EnumMap<>(Rarity.class);
     // Ores-specific base values per rarity
     private static final Map<Rarity, Double> perRarityBaseOres = new EnumMap<>(Rarity.class);
+    // Ingots-specific base values per rarity
+    private static final Map<Rarity, Double> perRarityBaseIngots = new EnumMap<>(Rarity.class);
     // Spawners-specific base values per rarity
     private static final Map<Rarity, Double> perRarityBaseSpawners = new EnumMap<>(Rarity.class);
     // Spawn eggs-specific base values per rarity
@@ -185,6 +187,29 @@ public final class Pricing {
         perRarityBaseOres.put(Rarity.LEGENDARY, perRarityOres.getDouble("LEGENDARY", perRarityBase.get(Rarity.LEGENDARY)));
         // MYTHIC defaults to LEGENDARY
         perRarityBaseOres.put(Rarity.MYTHIC, perRarityOres.getDouble("MYTHIC", perRarityBase.get(Rarity.LEGENDARY)));
+
+        // Ingots-specific per-rarity base, defaults to general per_rarity_base if missing
+        // Supported locations (prefer overrides):
+        // 1) pricing.overrides.per_rarity_base_ingots (placed directly above overrides.Ingots in config.yml)
+        // 2) pricing.per_rarity_base_ingots (legacy/root)
+        ConfigurationSection perRarityIngots = null;
+        ConfigurationSection overridesRootForIngots = section.getConfigurationSection("overrides");
+        if (overridesRootForIngots != null) {
+            perRarityIngots = overridesRootForIngots.getConfigurationSection("per_rarity_base_ingots");
+        }
+        if (perRarityIngots == null) {
+            perRarityIngots = section.getConfigurationSection("per_rarity_base_ingots");
+        }
+        if (perRarityIngots == null) perRarityIngots = (overridesRootForIngots != null)
+                ? overridesRootForIngots.createSection("per_rarity_base_ingots")
+                : section.createSection("per_rarity_base_ingots");
+        perRarityBaseIngots.put(Rarity.BASIC, perRarityIngots.getDouble("BASIC", perRarityBase.get(Rarity.BASIC)));
+        perRarityBaseIngots.put(Rarity.COMMON, perRarityIngots.getDouble("COMMON", perRarityBase.get(Rarity.COMMON)));
+        perRarityBaseIngots.put(Rarity.UNCOMMON, perRarityIngots.getDouble("UNCOMMON", perRarityBase.get(Rarity.UNCOMMON)));
+        perRarityBaseIngots.put(Rarity.RARE, perRarityIngots.getDouble("RARE", perRarityBase.get(Rarity.RARE)));
+        perRarityBaseIngots.put(Rarity.EPIC, perRarityIngots.getDouble("EPIC", perRarityBase.get(Rarity.EPIC)));
+        perRarityBaseIngots.put(Rarity.LEGENDARY, perRarityIngots.getDouble("LEGENDARY", perRarityBase.get(Rarity.LEGENDARY)));
+        perRarityBaseIngots.put(Rarity.MYTHIC, perRarityIngots.getDouble("MYTHIC", perRarityBase.get(Rarity.LEGENDARY)));
 
         // Spawners-specific per-rarity base, defaults to general per_rarity_base if missing
         // Primary location (legacy): pricing.per_rarity_base_spawners
@@ -349,6 +374,25 @@ public final class Pricing {
                     }
                 }
             }
+            // New: parse overrides.Ingots (IRON_INGOT, GOLD_INGOT, COPPER_INGOT, NETHERITE_INGOT)
+            ConfigurationSection ingots = overridesSection.getConfigurationSection("Ingots");
+            if (ingots != null) {
+                for (String key : ingots.getKeys(false)) {
+                    if (key == null) continue;
+                    String materialKey = key.trim().toUpperCase(Locale.ROOT);
+                    Material mat = Material.matchMaterial(materialKey);
+                    if (mat == null) continue; // skip unknown materials
+                    String rarityStr = ingots.getString(key);
+                    if (rarityStr == null || rarityStr.trim().isEmpty()) {
+                        rarityOverrides.put(mat, Rarity.COMMON);
+                        continue;
+                    }
+                    Rarity r = parseRarity(rarityStr);
+                    if (r != null) {
+                        rarityOverrides.put(mat, r);
+                    }
+                }
+            }
             // New: parse overrides.SpawnEggs (all spawn egg materials like ZOMBIE_SPAWN_EGG, CREEPER_SPAWN_EGG, etc.)
             ConfigurationSection spawnEggs = overridesSection.getConfigurationSection("SpawnEggs");
             if (spawnEggs != null) {
@@ -466,6 +510,17 @@ public final class Pricing {
         perRarityOresOut.set("EPIC", perRarityBaseOres.get(Rarity.EPIC));
         perRarityOresOut.set("LEGENDARY", perRarityBaseOres.get(Rarity.LEGENDARY));
         perRarityOresOut.set("MYTHIC", perRarityBaseOres.get(Rarity.MYTHIC));
+
+        // Save ingots-specific per-rarity base as well (under root and overrides for persistence)
+        ConfigurationSection perRarityIngotsOut = section.getConfigurationSection("per_rarity_base_ingots");
+        if (perRarityIngotsOut == null) perRarityIngotsOut = section.createSection("per_rarity_base_ingots");
+        perRarityIngotsOut.set("BASIC", perRarityBaseIngots.get(Rarity.BASIC));
+        perRarityIngotsOut.set("COMMON", perRarityBaseIngots.get(Rarity.COMMON));
+        perRarityIngotsOut.set("UNCOMMON", perRarityBaseIngots.get(Rarity.UNCOMMON));
+        perRarityIngotsOut.set("RARE", perRarityBaseIngots.get(Rarity.RARE));
+        perRarityIngotsOut.set("EPIC", perRarityBaseIngots.get(Rarity.EPIC));
+        perRarityIngotsOut.set("LEGENDARY", perRarityBaseIngots.get(Rarity.LEGENDARY));
+        perRarityIngotsOut.set("MYTHIC", perRarityBaseIngots.get(Rarity.MYTHIC));
 
         // Save spawners-specific per-rarity base as well
         ConfigurationSection perRaritySpawnersOut = section.getConfigurationSection("per_rarity_base_spawners");
@@ -595,6 +650,8 @@ public final class Pricing {
                 baseMap = perRarityBaseArmor;
             } else if (isOre(mat)) {
                 baseMap = perRarityBaseOres;
+            } else if (isIngot(mat)) {
+                baseMap = perRarityBaseIngots;
             } else if (isSpawnEgg(mat)) {
                 baseMap = perRarityBaseSpawnEggs;
             } else if (isSaplingOrSeed(mat)) {
@@ -682,11 +739,8 @@ public final class Pricing {
             case ANCIENT_DEBRIS:
             case COAL:
             case RAW_IRON:
-            case IRON_INGOT:
             case RAW_COPPER:
-            case COPPER_INGOT:
             case RAW_GOLD:
-            case GOLD_INGOT:
             case REDSTONE:
             case LAPIS_LAZULI:
             case DIAMOND:
@@ -694,6 +748,17 @@ public final class Pricing {
             case QUARTZ:
             case AMETHYST_SHARD:
             case NETHERITE_SCRAP:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private static boolean isIngot(Material mat) {
+        switch (mat) {
+            case IRON_INGOT:
+            case COPPER_INGOT:
+            case GOLD_INGOT:
             case NETHERITE_INGOT:
                 return true;
             default:
