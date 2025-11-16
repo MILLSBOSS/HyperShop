@@ -49,6 +49,9 @@ public enum Category {
             case COPPER_BLOCK:
             case COAL_BLOCK:
             case NETHERITE_BLOCK:
+            // Ensure special nether ore and its drop also appear under the Ores page
+            case ANCIENT_DEBRIS:
+            case NETHERITE_SCRAP:
                 return ORES;
             default:
                 // continue to heuristics below

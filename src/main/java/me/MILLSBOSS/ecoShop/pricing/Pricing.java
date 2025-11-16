@@ -39,6 +39,8 @@ public final class Pricing {
     private static final Map<Rarity, Double> perRarityBaseEnchantmentBooks = new EnumMap<>(Rarity.class);
     // Saplings and seeds-specific base values per rarity (BASIC..RARE)
     private static final Map<Rarity, Double> perRarityBaseSaplingsSeeds = new EnumMap<>(Rarity.class);
+    // Froglights-specific base values per rarity (BASIC only)
+    private static final Map<Rarity, Double> perRarityBaseFroglights = new EnumMap<>(Rarity.class);
     private static ConfigurationSection overridesSection;
     // New: rarity overrides by material via overrides.Blocks/Craftables
     private static final Map<Material, Rarity> rarityOverrides = new HashMap<>();
@@ -73,10 +75,7 @@ public final class Pricing {
         perRarityBase.put(Rarity.UNCOMMON, perRarity.getDouble("UNCOMMON", 20.0));
         perRarityBase.put(Rarity.RARE, perRarity.getDouble("RARE", 100.0));
         perRarityBase.put(Rarity.EPIC, perRarity.getDouble("EPIC", 500.0));
-        // Dedicated Netherite Block rarity. Defaults to EPIC to preserve previous behavior unless configured.
-        double netheriteBlockDefault = perRarity.getDouble("EPIC", 500.0);
-        double netheriteBlockVal = perRarity.getDouble("NETHERITE_BLOCK", netheriteBlockDefault);
-        perRarityBase.put(Rarity.NETHERITE_BLOCK, netheriteBlockVal);
+        // NETHERITE_BLOCK now belongs to per_rarity_base_resource_blocks (not general craftables)
         // Dedicated Netherite Scrap rarity. Defaults to EPIC to preserve previous behavior unless configured.
         double netheriteScrapDefault = perRarity.getDouble("EPIC", 500.0);
         double netheriteScrapVal = perRarity.getDouble("NETHERITE_SCRAP", netheriteScrapDefault);
@@ -86,10 +85,7 @@ public final class Pricing {
         double legendaryVal = perRarity.isSet("LEGENDARY") ? perRarity.getDouble("LEGENDARY", legendaryDefault)
                 : perRarity.getDouble("LEGANDERY", legendaryDefault);
         perRarityBase.put(Rarity.LEGENDARY, legendaryVal);
-        // Dedicated Netherite Ingot rarity: defaults to LEGENDARY value to preserve old behavior unless configured.
-        double netheriteIngotDefault = legendaryVal;
-        double netheriteIngotVal = perRarity.getDouble("NETHERITE_INGOT", netheriteIngotDefault);
-        perRarityBase.put(Rarity.NETHERITE_INGOT, netheriteIngotVal);
+        // NETHERITE_INGOT now belongs to per_rarity_base_ingots (not general craftables)
         // New dedicated Elytra rarity. If not configured, fall back to LEGENDARY value to preserve previous behavior.
         double elytraDefault = legendaryVal; // preserve old behavior by default
         double elytraVal = perRarity.getDouble("ELYTRA", elytraDefault);
@@ -164,6 +160,9 @@ public final class Pricing {
         perRarityBaseResourceBlocks.put(Rarity.COMMON, perRarityResourceBlocks.getDouble("COMMON", perRarityBaseBlocks.getOrDefault(Rarity.COMMON, perRarityBase.get(Rarity.COMMON))));
         perRarityBaseResourceBlocks.put(Rarity.UNCOMMON, perRarityResourceBlocks.getDouble("UNCOMMON", perRarityBaseBlocks.getOrDefault(Rarity.UNCOMMON, perRarityBase.get(Rarity.UNCOMMON))));
         perRarityBaseResourceBlocks.put(Rarity.RARE, perRarityResourceBlocks.getDouble("RARE", perRarityBaseBlocks.getOrDefault(Rarity.RARE, perRarityBase.get(Rarity.RARE))));
+        // Dedicated NETHERITE_BLOCK base now lives in resource blocks map; default to EPIC general value if missing
+        double nethBlockDefault = perRarityBase.getOrDefault(Rarity.EPIC, 500.0);
+        perRarityBaseResourceBlocks.put(Rarity.NETHERITE_BLOCK, perRarityResourceBlocks.getDouble("NETHERITE_BLOCK", nethBlockDefault));
         perRarityBaseResourceBlocks.put(Rarity.EPIC, perRarityBase.get(Rarity.EPIC));
         perRarityBaseResourceBlocks.put(Rarity.LEGENDARY, perRarityBase.get(Rarity.LEGENDARY));
         perRarityBaseResourceBlocks.put(Rarity.MYTHIC, perRarityBase.get(Rarity.LEGENDARY));
@@ -210,6 +209,9 @@ public final class Pricing {
         perRarityBaseIngots.put(Rarity.EPIC, perRarityIngots.getDouble("EPIC", perRarityBase.get(Rarity.EPIC)));
         perRarityBaseIngots.put(Rarity.LEGENDARY, perRarityIngots.getDouble("LEGENDARY", perRarityBase.get(Rarity.LEGENDARY)));
         perRarityBaseIngots.put(Rarity.MYTHIC, perRarityIngots.getDouble("MYTHIC", perRarityBase.get(Rarity.LEGENDARY)));
+        // Dedicated Netherite Ingot base now lives in ingots map; default to general LEGENDARY if missing
+        double netheriteIngotDefault = perRarityBase.getOrDefault(Rarity.LEGENDARY, 100000.0);
+        perRarityBaseIngots.put(Rarity.NETHERITE_INGOT, perRarityIngots.getDouble("NETHERITE_INGOT", netheriteIngotDefault));
 
         // Spawners-specific per-rarity base, defaults to general per_rarity_base if missing
         // Primary location (legacy): pricing.per_rarity_base_spawners
@@ -275,6 +277,28 @@ public final class Pricing {
         perRarityBaseSaplingsSeeds.put(Rarity.COMMON, perRaritySaplingsSeeds.getDouble("COMMON", perRarityBase.get(Rarity.COMMON)));
         perRarityBaseSaplingsSeeds.put(Rarity.UNCOMMON, perRaritySaplingsSeeds.getDouble("UNCOMMON", perRarityBase.get(Rarity.UNCOMMON)));
         perRarityBaseSaplingsSeeds.put(Rarity.RARE, perRaritySaplingsSeeds.getDouble("RARE", perRarityBase.get(Rarity.RARE)));
+
+        // Froglights-specific per-rarity base (BASIC only). Located at pricing.overrides.Craftables.per_rarity_base_froglights
+        ConfigurationSection perRarityFroglights = null;
+        {
+            ConfigurationSection overridesRoot = section.getConfigurationSection("overrides");
+            if (overridesRoot != null) {
+                ConfigurationSection craftables = overridesRoot.getConfigurationSection("Craftables");
+                if (craftables != null) {
+                    perRarityFroglights = craftables.getConfigurationSection("per_rarity_base_froglights");
+                }
+            }
+            if (perRarityFroglights == null) {
+                // Create the section for convenience and to persist defaults
+                ConfigurationSection overridesRootOut = section.getConfigurationSection("overrides");
+                if (overridesRootOut == null) overridesRootOut = section.createSection("overrides");
+                ConfigurationSection craftablesOut = overridesRootOut.getConfigurationSection("Craftables");
+                if (craftablesOut == null) craftablesOut = overridesRootOut.createSection("Craftables");
+                perRarityFroglights = craftablesOut.createSection("per_rarity_base_froglights");
+            }
+        }
+        // Only BASIC is considered for Froglights; other rarities are intentionally omitted
+        perRarityBaseFroglights.put(Rarity.BASIC, perRarityFroglights.getDouble("BASIC", perRarityBase.get(Rarity.BASIC)));
 
         // Enchantment books-specific per-rarity base (BASIC..RARE). Primary: pricing.per_rarity_base_enchantment_books
         ConfigurationSection perRarityEnchBooks = section.getConfigurationSection("per_rarity_base_enchantment_books");
@@ -471,9 +495,9 @@ public final class Pricing {
         perRarityOut.set("UNCOMMON", perRarityBase.get(Rarity.UNCOMMON));
         perRarityOut.set("RARE", perRarityBase.get(Rarity.RARE));
         perRarityOut.set("EPIC", perRarityBase.get(Rarity.EPIC));
-        perRarityOut.set("NETHERITE_BLOCK", perRarityBase.get(Rarity.NETHERITE_BLOCK));
+        // Do not persist NETHERITE_BLOCK under general craftables; it lives under resource blocks now
         perRarityOut.set("NETHERITE_SCRAP", perRarityBase.get(Rarity.NETHERITE_SCRAP));
-        perRarityOut.set("NETHERITE_INGOT", perRarityBase.get(Rarity.NETHERITE_INGOT));
+        // Do not persist NETHERITE_INGOT under general craftables; it lives under ingots now
         perRarityOut.set("LEGENDARY", perRarityBase.get(Rarity.LEGENDARY));
         perRarityOut.set("ELYTRA", perRarityBase.get(Rarity.ELYTRA));
         perRarityOut.set("ANCIENT_DEBRIS", perRarityBase.get(Rarity.ANCIENT_DEBRIS));
@@ -521,6 +545,7 @@ public final class Pricing {
         perRarityIngotsOut.set("EPIC", perRarityBaseIngots.get(Rarity.EPIC));
         perRarityIngotsOut.set("LEGENDARY", perRarityBaseIngots.get(Rarity.LEGENDARY));
         perRarityIngotsOut.set("MYTHIC", perRarityBaseIngots.get(Rarity.MYTHIC));
+        perRarityIngotsOut.set("NETHERITE_INGOT", perRarityBaseIngots.get(Rarity.NETHERITE_INGOT));
 
         // Save spawners-specific per-rarity base as well
         ConfigurationSection perRaritySpawnersOut = section.getConfigurationSection("per_rarity_base_spawners");
@@ -559,6 +584,7 @@ public final class Pricing {
         perRarityResourceBlocksOut.set("COMMON", perRarityBaseResourceBlocks.get(Rarity.COMMON));
         perRarityResourceBlocksOut.set("UNCOMMON", perRarityBaseResourceBlocks.get(Rarity.UNCOMMON));
         perRarityResourceBlocksOut.set("RARE", perRarityBaseResourceBlocks.get(Rarity.RARE));
+        perRarityResourceBlocksOut.set("NETHERITE_BLOCK", perRarityBaseResourceBlocks.get(Rarity.NETHERITE_BLOCK));
 
         plugin.saveConfig();
     }
@@ -656,6 +682,8 @@ public final class Pricing {
                 baseMap = perRarityBaseSpawnEggs;
             } else if (isSaplingOrSeed(mat)) {
                 baseMap = perRarityBaseSaplingsSeeds;
+            } else if (isFroglight(mat)) {
+                baseMap = perRarityBaseFroglights;
             } else if (isResourceBlock(mat)) {
                 baseMap = perRarityBaseResourceBlocks;
             } else if (mat.isBlock()) {
@@ -664,19 +692,17 @@ public final class Pricing {
                 baseMap = perRarityBase;
             }
             Double val = baseMap.get(r);
+            // Prefer the general per_rarity_base for rarities that the chosen base map doesn't define
             if (val == null) {
-                // If this is a (resource) block, ensure we still base the price on its block map by
-                // falling back to the RARE tier from that map (highest defined tier there),
-                // instead of jumping to the general per_rarity_base values.
+                val = perRarityBase.get(r);
+            }
+            // As a last resort for block families with limited tiers, fall back to that family's RARE tier
+            if (val == null) {
                 if (baseMap == perRarityBaseBlocks) {
                     val = perRarityBaseBlocks.get(Rarity.RARE);
                 } else if (baseMap == perRarityBaseResourceBlocks) {
                     val = perRarityBaseResourceBlocks.get(Rarity.RARE);
                 }
-            }
-            // Final fallback to general per_rarity_base (for truly special cases with no block base available)
-            if (val == null) {
-                val = perRarityBase.get(r);
             }
             perUnit = val != null ? val : 5.0;
         }
@@ -791,12 +817,25 @@ public final class Pricing {
             case MANGROVE_PROPAGULE:
             case CRIMSON_FUNGUS:
             case WARPED_FUNGUS:
+            // Treat Nether Wart like seeds for pricing purposes so it uses the saplings/seeds base map
+            case NETHER_WART:
             case WHEAT_SEEDS:
             case BEETROOT_SEEDS:
             case PUMPKIN_SEEDS:
             case MELON_SEEDS:
             case TORCHFLOWER_SEEDS:
             case PITCHER_POD:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private static boolean isFroglight(Material mat) {
+        switch (mat) {
+            case OCHRE_FROGLIGHT:
+            case VERDANT_FROGLIGHT:
+            case PEARLESCENT_FROGLIGHT:
                 return true;
             default:
                 return false;

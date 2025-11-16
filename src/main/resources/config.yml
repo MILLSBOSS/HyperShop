@@ -15,8 +15,6 @@ pricing:
     EPIC: 2000.0
     LEGENDARY: 100000.0  # General top-tier rarity
     ELYTRA: 1300000.0     # Elytra-specific rarity (defaults to LEGENDARY value); adjust as desired
-    NETHERITE_BLOCK: 900000.0 # Dedicated rarity for Netherite Block; defaults to EPIC value by default
-    NETHERITE_INGOT: 100000.0 # Dedicated rarity for Netherite Ingot; defaults to LEGENDARY value by default
     NETHERITE_SCRAP: 25000.0 # Dedicated rarity for Netherite Scrap; defaults to EPIC value by default
     ANCIENT_DEBRIS: 20000.0 # Dedicated rarity for Ancient Debris; defaults to EPIC value by default
     # If you previously used the misspelled key 'LEGENDARY', it will be migrated automatically on next load.
@@ -43,6 +41,7 @@ pricing:
       COMMON: 65
       UNCOMMON: 0.40
       RARE: 165
+      NETHERITE_BLOCK: 900000.0
 
     ResourceBlocks:
       GOLD_BLOCK: basic
@@ -64,6 +63,7 @@ pricing:
       EPIC: 2000.0
       LEGENDARY: 100000.0
       MYTHIC: 150000.0
+      NETHERITE_INGOT: 100000.0
 
     # Ingots (uses pricing.per_rarity_base_ingots)
     Ingots:
@@ -178,6 +178,15 @@ pricing:
       WAXED_EXPOSED_COPPER_LANTERN: common
       WAXED_WEATHERED_COPPER_LANTERN: common
       WAXED_OXIDIZED_COPPER_LANTERN: common
+
+      # Froglights-specific base price per unit (BASIC only). Applies only to the list below.
+      per_rarity_base_froglights:
+        BASIC: 4
+
+      # Froglights
+      OCHRE_FROGLIGHT: basic
+      VERDANT_FROGLIGHT: basic
+      PEARLESCENT_FROGLIGHT: basic
 
       # Transportation
       MINECART: common
@@ -356,7 +365,6 @@ pricing:
       HONEY_BOTTLE: basic
       MELON_SLICE: basic
       MILK_BUCKET: basic
-      NETHER_WART: common
       MUSHROOM_STEW: basic
       MUTTON: basic
       POISONOUS_POTATO: basic
@@ -482,10 +490,11 @@ pricing:
       NETHERITE_BOOTS: legendary
       TURTLE_HELMET: uncommon
 
-      # Saplings and seeds-specific base price per unit for each rarity (BASIC..COMMON). Applies only to the list below.
+      # Saplings and seeds-specific base price per unit for each rarity (BASIC..UNCOMMON). Applies only to the list below.
       per_rarity_base_saplings_seeds:
         BASIC: 1.5
         COMMON: 5
+        UNCOMMON: 10
 
       # Saplings and seeds
       OAK_SAPLING: basic
@@ -503,10 +512,9 @@ pricing:
       BEETROOT_SEEDS: basic
       PUMPKIN_SEEDS: basic
       MELON_SEEDS: basic
+      NETHER_WART: uncommon
       TORCHFLOWER_SEEDS: common
       PITCHER_POD: common
-
-
 
     # Spawn eggs-specific base price per unit for each rarity. Applies only to spawn egg items priced via overrides.SpawnEggs.
     per_rarity_base_spawn_eggs:
