@@ -19,6 +19,8 @@ public class ListingsManager {
 
     private final Map<UUID, Listing> listings = new LinkedHashMap<>();
     private final Map<UUID, Double> salesTotals = new HashMap<>();
+    // Per-seller sale records to announce on next join
+    private final Map<UUID, List<SaleRecord>> saleRecords = new HashMap<>();
 
     public ListingsManager(File dataFolder) {
         if (!dataFolder.exists()) dataFolder.mkdirs();
@@ -74,6 +76,25 @@ public class ListingsManager {
         return salesTotals.getOrDefault(seller, 0.0);
     }
 
+    /**
+     * Record a sale entry for a seller. Stored persistently and cleared when the seller joins and is notified.
+     */
+    public synchronized void addSaleRecord(UUID seller, UUID buyer, String itemName, int quantity, double amount, long time) {
+        List<SaleRecord> list = saleRecords.computeIfAbsent(seller, k -> new ArrayList<>());
+        list.add(new SaleRecord(buyer, itemName, quantity, amount, time));
+        saveSalesAsync();
+    }
+
+    /**
+     * Returns and clears pending sale records for the given seller.
+     */
+    public synchronized List<SaleRecord> drainSaleRecords(UUID seller) {
+        List<SaleRecord> list = saleRecords.remove(seller);
+        if (list == null) return Collections.emptyList();
+        saveSalesAsync();
+        return list;
+    }
+
     private void load() {
         if (!listingsFile.exists()) return;
         FileConfiguration cfg = YamlConfiguration.loadConfiguration(listingsFile);
@@ -101,14 +122,37 @@ public class ListingsManager {
     private void loadSales() {
         if (!salesFile.exists()) return;
         FileConfiguration cfg = YamlConfiguration.loadConfiguration(salesFile);
-        ConfigurationSection sec = cfg.getConfigurationSection("sales");
-        if (sec == null) return;
-        for (String key : sec.getKeys(false)) {
-            try {
-                UUID uid = UUID.fromString(key);
-                double total = sec.getDouble(key);
-                salesTotals.put(uid, total);
-            } catch (Exception ignored) {}
+        ConfigurationSection totalsSec = cfg.getConfigurationSection("sales");
+        if (totalsSec != null) {
+            for (String key : totalsSec.getKeys(false)) {
+                try {
+                    UUID uid = UUID.fromString(key);
+                    double total = totalsSec.getDouble(key);
+                    salesTotals.put(uid, total);
+                } catch (Exception ignored) {}
+            }
+        }
+        ConfigurationSection recordsSec = cfg.getConfigurationSection("records");
+        if (recordsSec != null) {
+            for (String sellerKey : recordsSec.getKeys(false)) {
+                try {
+                    UUID seller = UUID.fromString(sellerKey);
+                    List<Map<String, Object>> rawList = (List<Map<String, Object>>) recordsSec.getList(sellerKey);
+                    if (rawList == null) continue;
+                    List<SaleRecord> list = new ArrayList<>();
+                    for (Map<String, Object> map : rawList) {
+                        try {
+                            UUID buyer = UUID.fromString(String.valueOf(map.get("buyer")));
+                            String itemName = String.valueOf(map.getOrDefault("item", "Item"));
+                            int qty = Integer.parseInt(String.valueOf(map.getOrDefault("qty", 1)));
+                            double amount = Double.parseDouble(String.valueOf(map.getOrDefault("amount", 0.0)));
+                            long time = Long.parseLong(String.valueOf(map.getOrDefault("time", System.currentTimeMillis())));
+                            list.add(new SaleRecord(buyer, itemName, qty, amount, time));
+                        } catch (Exception ignored) {}
+                    }
+                    if (!list.isEmpty()) saleRecords.put(seller, list);
+                } catch (Exception ignored) {}
+            }
         }
     }
 
@@ -146,10 +190,42 @@ public class ListingsManager {
         for (Map.Entry<UUID, Double> e : salesTotals.entrySet()) {
             sec.set(e.getKey().toString(), e.getValue());
         }
+        // Save records section
+        ConfigurationSection rec = cfg.createSection("records");
+        for (Map.Entry<UUID, List<SaleRecord>> e : saleRecords.entrySet()) {
+            List<Map<String, Object>> list = new ArrayList<>();
+            for (SaleRecord r : e.getValue()) {
+                Map<String, Object> m = new LinkedHashMap<>();
+                m.put("buyer", r.buyer.toString());
+                m.put("item", r.itemName);
+                m.put("qty", r.quantity);
+                m.put("amount", r.amount);
+                m.put("time", r.time);
+                list.add(m);
+            }
+            rec.set(e.getKey().toString(), list);
+        }
         try {
             cfg.save(salesFile);
         } catch (IOException ex) {
             Bukkit.getLogger().warning("Failed to save sales: " + ex.getMessage());
+        }
+    }
+
+    // Simple immutable sale record
+    public static class SaleRecord {
+        public final UUID buyer;
+        public final String itemName;
+        public final int quantity;
+        public final double amount;
+        public final long time;
+
+        public SaleRecord(UUID buyer, String itemName, int quantity, double amount, long time) {
+            this.buyer = buyer;
+            this.itemName = itemName;
+            this.quantity = quantity;
+            this.amount = amount;
+            this.time = time;
         }
     }
 }

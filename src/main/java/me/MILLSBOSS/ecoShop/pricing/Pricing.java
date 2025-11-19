@@ -35,6 +35,8 @@ public final class Pricing {
     private static final Map<Rarity, Double> perRarityBaseSpawners = new EnumMap<>(Rarity.class);
     // Spawn eggs-specific base values per rarity
     private static final Map<Rarity, Double> perRarityBaseSpawnEggs = new EnumMap<>(Rarity.class);
+    // Mob heads-specific base values per rarity
+    private static final Map<Rarity, Double> perRarityBaseMobHeads = new EnumMap<>(Rarity.class);
     // Enchantment books-specific base values per rarity (BASIC..RARE)
     private static final Map<Rarity, Double> perRarityBaseEnchantmentBooks = new EnumMap<>(Rarity.class);
     // Saplings and seeds-specific base values per rarity (BASIC..RARE)
@@ -70,7 +72,16 @@ public final class Pricing {
         }
         if (perRarity == null) perRarity = section.createSection("per_rarity_base_craftables");
         // Load with sensible defaults if missing
-        perRarityBase.put(Rarity.BASIC, perRarity.getDouble("BASIC", 2.0));
+        // Support alias key "BASE" for BASIC (config convenience)
+        double basicVal;
+        if (perRarity.isSet("BASIC")) {
+            basicVal = perRarity.getDouble("BASIC", 2.0);
+        } else if (perRarity.isSet("BASE")) {
+            basicVal = perRarity.getDouble("BASE", 2.0);
+        } else {
+            basicVal = 2.0;
+        }
+        perRarityBase.put(Rarity.BASIC, basicVal);
         perRarityBase.put(Rarity.COMMON, perRarity.getDouble("COMMON", 5.0));
         perRarityBase.put(Rarity.UNCOMMON, perRarity.getDouble("UNCOMMON", 20.0));
         perRarityBase.put(Rarity.RARE, perRarity.getDouble("RARE", 100.0));
@@ -252,6 +263,24 @@ public final class Pricing {
         perRarityBaseSpawnEggs.put(Rarity.LEGENDARY, perRaritySpawnEggs.getDouble("LEGENDARY", perRarityBase.get(Rarity.LEGENDARY)));
         // MYTHIC defaults to LEGENDARY
         perRarityBaseSpawnEggs.put(Rarity.MYTHIC, perRaritySpawnEggs.getDouble("MYTHIC", perRarityBase.get(Rarity.LEGENDARY)));
+
+        // Mob heads-specific per-rarity base. Primary location: pricing.per_rarity_base_mob_heads
+        ConfigurationSection perRarityMobHeads = section.getConfigurationSection("per_rarity_base_mob_heads");
+        if (perRarityMobHeads == null) {
+            // Supported location: pricing.overrides.per_rarity_base_mob_heads (placed directly above overrides.MobHeads)
+            ConfigurationSection overridesRoot = section.getConfigurationSection("overrides");
+            if (overridesRoot != null) {
+                perRarityMobHeads = overridesRoot.getConfigurationSection("per_rarity_base_mob_heads");
+            }
+        }
+        if (perRarityMobHeads == null) perRarityMobHeads = section.createSection("per_rarity_base_mob_heads");
+        perRarityBaseMobHeads.put(Rarity.BASIC, perRarityMobHeads.getDouble("BASIC", perRarityBase.get(Rarity.BASIC)));
+        perRarityBaseMobHeads.put(Rarity.COMMON, perRarityMobHeads.getDouble("COMMON", perRarityBase.get(Rarity.COMMON)));
+        perRarityBaseMobHeads.put(Rarity.UNCOMMON, perRarityMobHeads.getDouble("UNCOMMON", perRarityBase.get(Rarity.UNCOMMON)));
+        perRarityBaseMobHeads.put(Rarity.RARE, perRarityMobHeads.getDouble("RARE", perRarityBase.get(Rarity.RARE)));
+        perRarityBaseMobHeads.put(Rarity.EPIC, perRarityMobHeads.getDouble("EPIC", perRarityBase.get(Rarity.EPIC)));
+        perRarityBaseMobHeads.put(Rarity.LEGENDARY, perRarityMobHeads.getDouble("LEGENDARY", perRarityBase.get(Rarity.LEGENDARY)));
+        perRarityBaseMobHeads.put(Rarity.MYTHIC, perRarityMobHeads.getDouble("MYTHIC", perRarityBase.get(Rarity.LEGENDARY)));
 
         // Saplings and seeds-specific per-rarity base (BASIC..RARE)
         ConfigurationSection overridesRootForSaplings = section.getConfigurationSection("overrides");
@@ -455,6 +484,26 @@ public final class Pricing {
                     }
                 }
             }
+            // New: parse overrides.MobHeads (e.g., ZOMBIE_HEAD, CREEPER_HEAD, DRAGON_HEAD, etc.)
+            ConfigurationSection mobHeads = overridesSection.getConfigurationSection("MobHeads");
+            if (mobHeads != null) {
+                for (String key : mobHeads.getKeys(false)) {
+                    if (key == null) continue;
+                    String materialKey = key.trim().toUpperCase(Locale.ROOT);
+                    Material mat = Material.matchMaterial(materialKey);
+                    if (mat == null) continue; // skip unknown materials
+                    String rarityStr = mobHeads.getString(key);
+                    if (rarityStr == null || rarityStr.trim().isEmpty()) {
+                        rarityOverrides.put(mat, Rarity.COMMON);
+                        continue;
+                    }
+                    Rarity r = parseRarity(rarityStr);
+                    if (r != null) {
+                        rarityOverrides.put(mat, r);
+                    }
+                }
+            }
+
             // Parse spawner rarity overrides from overrides.Spawners
             ConfigurationSection spawners = overridesSection.getConfigurationSection("Spawners");
             if (spawners != null) {
@@ -491,6 +540,8 @@ public final class Pricing {
         ConfigurationSection perRarityOut = section.getConfigurationSection("per_rarity_base_craftables");
         if (perRarityOut == null) perRarityOut = section.createSection("per_rarity_base_craftables");
         perRarityOut.set("BASIC", perRarityBase.get(Rarity.BASIC));
+        // Also persist alias key for convenience
+        perRarityOut.set("BASE", perRarityBase.get(Rarity.BASIC));
         perRarityOut.set("COMMON", perRarityBase.get(Rarity.COMMON));
         perRarityOut.set("UNCOMMON", perRarityBase.get(Rarity.UNCOMMON));
         perRarityOut.set("RARE", perRarityBase.get(Rarity.RARE));
@@ -576,6 +627,17 @@ public final class Pricing {
         perRarityEnchBooksOut.set("COMMON", perRarityBaseEnchantmentBooks.get(Rarity.COMMON));
         perRarityEnchBooksOut.set("UNCOMMON", perRarityBaseEnchantmentBooks.get(Rarity.UNCOMMON));
         perRarityEnchBooksOut.set("RARE", perRarityBaseEnchantmentBooks.get(Rarity.RARE));
+
+        // Save mob heads-specific per-rarity base as well
+        ConfigurationSection perRarityMobHeadsOut = section.getConfigurationSection("per_rarity_base_mob_heads");
+        if (perRarityMobHeadsOut == null) perRarityMobHeadsOut = section.createSection("per_rarity_base_mob_heads");
+        perRarityMobHeadsOut.set("BASIC", perRarityBaseMobHeads.get(Rarity.BASIC));
+        perRarityMobHeadsOut.set("COMMON", perRarityBaseMobHeads.get(Rarity.COMMON));
+        perRarityMobHeadsOut.set("UNCOMMON", perRarityBaseMobHeads.get(Rarity.UNCOMMON));
+        perRarityMobHeadsOut.set("RARE", perRarityBaseMobHeads.get(Rarity.RARE));
+        perRarityMobHeadsOut.set("EPIC", perRarityBaseMobHeads.get(Rarity.EPIC));
+        perRarityMobHeadsOut.set("LEGENDARY", perRarityBaseMobHeads.get(Rarity.LEGENDARY));
+        perRarityMobHeadsOut.set("MYTHIC", perRarityBaseMobHeads.get(Rarity.MYTHIC));
 
         // Persist defaults back for resource blocks base
         ConfigurationSection perRarityResourceBlocksOut = section.getConfigurationSection("per_rarity_base_resource_blocks");
@@ -686,6 +748,8 @@ public final class Pricing {
                 baseMap = perRarityBaseFroglights;
             } else if (isResourceBlock(mat)) {
                 baseMap = perRarityBaseResourceBlocks;
+            } else if (isMobHead(mat)) {
+                baseMap = perRarityBaseMobHeads;
             } else if (mat.isBlock()) {
                 baseMap = perRarityBaseBlocks;
             } else {
@@ -853,6 +917,20 @@ public final class Pricing {
             case COPPER_BLOCK:
             case COAL_BLOCK:
             case NETHERITE_BLOCK:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private static boolean isMobHead(Material mat) {
+        switch (mat) {
+            case CREEPER_HEAD:
+            case ZOMBIE_HEAD:
+            case SKELETON_SKULL:
+            case WITHER_SKELETON_SKULL:
+            case DRAGON_HEAD:
+            case PIGLIN_HEAD:
                 return true;
             default:
                 return false;

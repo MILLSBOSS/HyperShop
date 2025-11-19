@@ -8,6 +8,7 @@ listing_throttle_ms: 600
 pricing:
   # Base price per unit for each rarity. You can tweak these to change the suggested max price calculation.
   per_rarity_base_craftables:
+    BASE: 1.0         # Alias for BASIC; used by code and kept in sync automatically
     BASIC: 5.0         # New lowest tier for very common/basic items
     COMMON: 15.0
     UNCOMMON: 20.0
@@ -219,32 +220,37 @@ pricing:
       PALE_OAK_CHEST_BOAT: common
 
       # Basic materials and misc
-      STICK: basic
-      FEATHER: basic
+      HONEY_BLOCK: basic
+      SLIME_BLOCK: base
+      SLIME_BALL: base
+      STRING: base
+      STICK: base
+      FEATHER: base
+      MAGMA_CREAM: basic
       SHULKER_SHELL: uncommon
-      BOWL: common
-      BUCKET: common
-      GLASS_BOTTLE: common
+      BOWL: basic
+      BUCKET: basic
+      GLASS_BOTTLE: basic
       POTION: common
-      PAPER: common
-      BOOK: common
-      MAP: common
+      PAPER: basic
+      BOOK: basic
+      MAP: basic
       COMPASS: common
       CLOCK: common
       SPYGLASS: common
       BRICK: basic
       NETHER_BRICK: basic
-      FIREWORK_ROCKET: common
+      FIREWORK_ROCKET: basic
       FIREWORK_STAR: common
-      ARROW: common
-      SPECTRAL_ARROW: common
+      ARROW: basic
+      SPECTRAL_ARROW: basic
       TIPPED_ARROW: common
-      ARMOR_STAND: common
-      FLOWER_POT: common
-      ITEM_FRAME: common
-      PAINTING: common
-      LEAD: common
-      BONE_BLOCK: common
+      ARMOR_STAND: basic
+      FLOWER_POT: basic
+      ITEM_FRAME: basic
+      PAINTING: basic
+      LEAD: basic
+      BONE_BLOCK: basic
       TINTED_GLASS: common
       NETHER_STAR: legendary
       HEAVY_CORE: elytra
@@ -296,7 +302,7 @@ pricing:
       FLOW_ARMOR_TRIM_SMITHING_TEMPLATE: uncommon
       BOLT_ARMOR_TRIM_SMITHING_TEMPLATE: uncommon
       NETHERITE_UPGRADE_SMITHING_TEMPLATE: uncommon
-      WHITE_BED: common
+      WHITE_BED: basic
       ORANGE_BED: basic
       MAGENTA_BED: basic
       LIGHT_BLUE_BED: basic
@@ -518,11 +524,11 @@ pricing:
 
     # Spawn eggs-specific base price per unit for each rarity. Applies only to spawn egg items priced via overrides.SpawnEggs.
     per_rarity_base_spawn_eggs:
-      BASIC: 1000
-      COMMON: 5000
-      UNCOMMON: 8000
-      RARE: 10000
-      EPIC: 12000
+      BASIC: 2000
+      COMMON: 10000
+      UNCOMMON: 12000
+      RARE: 14000
+      EPIC: 16000
       LEGENDARY: 150000.0
       MYTHIC: 300000.0
 
@@ -607,68 +613,6 @@ pricing:
       ZOMBIE_HORSE_SPAWN_EGG: uncommon
       ZOMBIE_VILLAGER_SPAWN_EGG: uncommon
       ZOMBIFIED_PIGLIN_SPAWN_EGG: common
-
-    # Enchantment books-specific base price per unit for each rarity (BASIC..RARE). Applies only to EnchantmentBooks below.
-    per_rarity_base_enchantment_books:
-      BASIC: 10.0
-      COMMON: 15.0
-      UNCOMMON: 60.0
-      RARE: 35.0
-
-    # Enchanted books (uses pricing.per_rarity_base_enchantment_books)
-    EnchantmentBooks:
-      # Enchantment books - set rarity per enchantment key (applies to any level)
-      # Armor
-      PROTECTION: uncommon
-      FIRE_PROTECTION: uncommon
-      BLAST_PROTECTION: uncommon
-      PROJECTILE_PROTECTION: uncommon
-      THORNS: rare
-      RESPIRATION: uncommon
-      AQUA_AFFINITY: uncommon
-      DEPTH_STRIDER: rare
-      FROST_WALKER: rare
-      FEATHER_FALLING: uncommon
-      SOUL_SPEED: rare
-      SWIFT_SNEAK: rare
-      # Curses
-      BINDING_CURSE: rare
-      VANISHING_CURSE: rare
-      # Swords
-      SHARPNESS: rare
-      SMITE: uncommon
-      BANE_OF_ARTHROPODS: uncommon
-      KNOCKBACK: uncommon
-      FIRE_ASPECT: rare
-      LOOTING: rare
-      SWEEPING_EDGE: rare
-      # Tools
-      MENDING: rare
-      UNBREAKING: rare
-      EFFICIENCY: uncommon
-      FORTUNE: rare
-      SILK_TOUCH: rare
-      # Trident
-      LOYALTY: rare
-      IMPALING: rare
-      RIPTIDE: rare
-      CHANNELING: rare
-      # Fishing
-      LURE: uncommon
-      LUCK_OF_THE_SEA: rare
-      # Bow
-      POWER: uncommon
-      PUNCH: uncommon
-      FLAME: rare
-      INFINITY: rare
-      # Crossbow
-      MULTISHOT: rare
-      QUICK_CHARGE: uncommon
-      PIERCING: uncommon
-      # Mace (1.21)
-      DENSITY: rare
-      BREACH: rare
-      WIND_BURST: rare
 
     # Spawners-specific base price per unit for each rarity. Applies only to spawner items priced via overrides.Spawners.
     per_rarity_base_spawners:
@@ -775,6 +719,88 @@ pricing:
       # 1.21 Trial chambers
       BREEZE: rare
       BOGGED: uncommon
+
+    # Mob heads-specific base price per unit for each rarity. Applies only to items listed under overrides.MobHeads.
+    per_rarity_base_mob_heads:
+      BASIC: 500
+      COMMON: 650
+      UNCOMMON: 800
+      RARE: 1000
+      EPIC: 80000
+      LEGENDARY: 150000.0
+      MYTHIC: 300000.0
+
+    # Mob Heads (uses pricing.per_rarity_base_mob_heads)
+    MobHeads:
+      # Mob heads - rarity per head item
+      CREEPER_HEAD: common
+      ZOMBIE_HEAD: basic
+      SKELETON_SKULL: basic
+      WITHER_SKELETON_SKULL: uncommon
+      DRAGON_HEAD: rare
+      PIGLIN_HEAD: rare
+
+    # Enchantment books-specific base price per unit for each rarity (BASIC..RARE). Applies only to EnchantmentBooks below.
+    per_rarity_base_enchantment_books:
+      BASIC: 10.0
+      COMMON: 15.0
+      UNCOMMON: 60.0
+      RARE: 35.0
+
+    # Enchanted books (uses pricing.per_rarity_base_enchantment_books)
+    EnchantmentBooks:
+      # Enchantment books - set rarity per enchantment key (applies to any level)
+      # Armor
+      PROTECTION: uncommon
+      FIRE_PROTECTION: uncommon
+      BLAST_PROTECTION: uncommon
+      PROJECTILE_PROTECTION: uncommon
+      THORNS: rare
+      RESPIRATION: uncommon
+      AQUA_AFFINITY: uncommon
+      DEPTH_STRIDER: rare
+      FROST_WALKER: rare
+      FEATHER_FALLING: uncommon
+      SOUL_SPEED: rare
+      SWIFT_SNEAK: rare
+      # Curses
+      BINDING_CURSE: rare
+      VANISHING_CURSE: rare
+      # Swords
+      SHARPNESS: rare
+      SMITE: uncommon
+      BANE_OF_ARTHROPODS: uncommon
+      KNOCKBACK: uncommon
+      FIRE_ASPECT: rare
+      LOOTING: rare
+      SWEEPING_EDGE: rare
+      # Tools
+      MENDING: rare
+      UNBREAKING: rare
+      EFFICIENCY: uncommon
+      FORTUNE: rare
+      SILK_TOUCH: rare
+      # Trident
+      LOYALTY: rare
+      IMPALING: rare
+      RIPTIDE: rare
+      CHANNELING: rare
+      # Fishing
+      LURE: uncommon
+      LUCK_OF_THE_SEA: rare
+      # Bow
+      POWER: uncommon
+      PUNCH: uncommon
+      FLAME: rare
+      INFINITY: rare
+      # Crossbow
+      MULTISHOT: rare
+      QUICK_CHARGE: uncommon
+      PIERCING: uncommon
+      # Mace (1.21)
+      DENSITY: rare
+      BREACH: rare
+      WIND_BURST: rare
 
     # Only the following rarities should be listed here: BASIC, COMMON, UNCOMMON, RARE The LEGENDARY and MYTHIC are for top-tier special cases.
     per_rarity_base_blocks:

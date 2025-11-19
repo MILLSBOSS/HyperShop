@@ -15,6 +15,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
@@ -320,9 +321,11 @@ public class ShopListener implements Listener {
                     for (ItemStack rem : left.values()) p.getWorld().dropItemNaturally(p.getLocation(), rem);
                     // Economy transfer
                     plugin.getEconomy().withdrawPlayer(p, total);
-                    if (Bukkit.getPlayer(l.getSeller()) != null && plugin.getEconomy() != null) {
-                        plugin.getEconomy().depositPlayer(Bukkit.getOfflinePlayer(l.getSeller()), total);
-                    }
+                    // Always deposit to seller, even if offline
+                    plugin.getEconomy().depositPlayer(Bukkit.getOfflinePlayer(l.getSeller()), total);
+                    // Record sale for join-time notification
+                    String itemName = prettyItemName(toGive);
+                    plugin.getListingsManager().addSaleRecord(l.getSeller(), p.getUniqueId(), itemName, qty, Math.round(total * 100.0) / 100.0, System.currentTimeMillis());
                     // Update or remove listing
                     ItemStack remaining = l.getItem().clone();
                     int newAmt = remaining.getAmount() - qty;
@@ -340,7 +343,6 @@ public class ShopListener implements Listener {
                     // Notify seller if online
                     org.bukkit.entity.Player sellerPlayer = Bukkit.getPlayer(l.getSeller());
                     if (sellerPlayer != null && sellerPlayer.isOnline()) {
-                        String itemName = prettyItemName(toGive);
                         sellerPlayer.sendMessage(ChatColor.YELLOW + p.getName() + ChatColor.GRAY + " bought " + ChatColor.AQUA + qty + "x " + itemName + ChatColor.GRAY + " from your listing for " + ChatColor.GREEN + String.format(Locale.US, "%.2f", total) + ChatColor.GRAY + ".");
                     }
 
@@ -576,6 +578,23 @@ public class ShopListener implements Listener {
             HashMap<Integer, ItemStack> left = e.getPlayer().getInventory().addItem(item);
             for (ItemStack rem : left.values()) e.getPlayer().getWorld().dropItemNaturally(e.getPlayer().getLocation(), rem);
         }
+    }
+
+    @EventHandler
+    public void onJoin(PlayerJoinEvent e) {
+        Player p = e.getPlayer();
+        ListingsManager lm = plugin.getListingsManager();
+        List<ListingsManager.SaleRecord> records = lm.drainSaleRecords(p.getUniqueId());
+        if (records.isEmpty()) return;
+        double sum = 0.0;
+        p.sendMessage(ChatColor.GOLD + "While you were away, your shop made these sales:");
+        for (ListingsManager.SaleRecord r : records) {
+            sum += r.amount;
+            String buyerName = Optional.ofNullable(Bukkit.getOfflinePlayer(r.buyer).getName()).orElse("Unknown");
+            String line = ChatColor.YELLOW + "- " + ChatColor.AQUA + buyerName + ChatColor.YELLOW + " bought " + ChatColor.WHITE + r.quantity + "x " + r.itemName + ChatColor.YELLOW + " for " + ChatColor.GREEN + String.format(java.util.Locale.US, "%.2f", r.amount);
+            p.sendMessage(line);
+        }
+        p.sendMessage(ChatColor.GREEN + "Total: " + ChatColor.AQUA + String.format(java.util.Locale.US, "%.2f", sum));
     }
 
     private static String prettyItemName(ItemStack item) {
