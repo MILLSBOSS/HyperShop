@@ -29,6 +29,8 @@ public final class Pricing {
     private static final Map<Rarity, Double> perRarityBaseBlocks = new EnumMap<>(Rarity.class);
     // Ores-specific base values per rarity
     private static final Map<Rarity, Double> perRarityBaseOres = new EnumMap<>(Rarity.class);
+    // Ore drops-specific base values per rarity (e.g., COAL, RAW_IRON, REDSTONE, DIAMOND, etc.)
+    private static final Map<Rarity, Double> perRarityBaseOreDrops = new EnumMap<>(Rarity.class);
     // Ingots-specific base values per rarity
     private static final Map<Rarity, Double> perRarityBaseIngots = new EnumMap<>(Rarity.class);
     // Spawners-specific base values per rarity
@@ -71,13 +73,10 @@ public final class Pricing {
             perRarity = section.getConfigurationSection("per_rarity_base");
         }
         if (perRarity == null) perRarity = section.createSection("per_rarity_base_craftables");
-        // Load with sensible defaults if missing
-        // Support alias key "BASE" for BASIC (config convenience)
+        // Load with sensible defaults if missing. Expect BASIC only (BASE removed from config).
         double basicVal;
         if (perRarity.isSet("BASIC")) {
             basicVal = perRarity.getDouble("BASIC", 2.0);
-        } else if (perRarity.isSet("BASE")) {
-            basicVal = perRarity.getDouble("BASE", 2.0);
         } else {
             basicVal = 2.0;
         }
@@ -101,10 +100,7 @@ public final class Pricing {
         double elytraDefault = legendaryVal; // preserve old behavior by default
         double elytraVal = perRarity.getDouble("ELYTRA", elytraDefault);
         perRarityBase.put(Rarity.ELYTRA, elytraVal);
-        // New dedicated Ancient Debris rarity. Defaults to EPIC by design unless configured.
-        double ancientDebrisDefault = perRarity.getDouble("EPIC", 500.0);
-        double ancientDebrisVal = perRarity.getDouble("ANCIENT_DEBRIS", ancientDebrisDefault);
-        perRarityBase.put(Rarity.ANCIENT_DEBRIS, ancientDebrisVal);
+        // Ancient Debris dedicated rarity now belongs to per_rarity_base_ores (not general craftables)
 
         // Armor-specific per-rarity base, defaults to general per_rarity_base if missing to preserve compatibility
         // Primary location (legacy): pricing.per_rarity_base_armor
@@ -197,6 +193,9 @@ public final class Pricing {
         perRarityBaseOres.put(Rarity.LEGENDARY, perRarityOres.getDouble("LEGENDARY", perRarityBase.get(Rarity.LEGENDARY)));
         // MYTHIC defaults to LEGENDARY
         perRarityBaseOres.put(Rarity.MYTHIC, perRarityOres.getDouble("MYTHIC", perRarityBase.get(Rarity.LEGENDARY)));
+        // Dedicated Ancient Debris base now lives in ores map; default to EPIC from general base if not set
+        double ancientDebrisDefaultOres = perRarityBase.getOrDefault(Rarity.EPIC, 500.0);
+        perRarityBaseOres.put(Rarity.ANCIENT_DEBRIS, perRarityOres.getDouble("ANCIENT_DEBRIS", ancientDebrisDefaultOres));
 
         // Ingots-specific per-rarity base, defaults to general per_rarity_base if missing
         // Supported locations (prefer overrides):
@@ -329,6 +328,36 @@ public final class Pricing {
         // Only BASIC is considered for Froglights; other rarities are intentionally omitted
         perRarityBaseFroglights.put(Rarity.BASIC, perRarityFroglights.getDouble("BASIC", perRarityBase.get(Rarity.BASIC)));
 
+        // Ore drops-specific per-rarity base. Primary: pricing.per_rarity_base_ore_drops
+        // Additional supported locations for convenience:
+        // - pricing.overrides.per_rarity_base_ore_drops
+        // - pricing.overrides.Ores.per_rarity_base_ore_drops (directly above the Common ore drops list)
+        ConfigurationSection perRarityOreDrops = section.getConfigurationSection("per_rarity_base_ore_drops");
+        if (perRarityOreDrops == null) {
+            ConfigurationSection overridesRoot = section.getConfigurationSection("overrides");
+            if (overridesRoot != null) {
+                perRarityOreDrops = overridesRoot.getConfigurationSection("per_rarity_base_ore_drops");
+                if (perRarityOreDrops == null) {
+                    ConfigurationSection oresRoot = overridesRoot.getConfigurationSection("Ores");
+                    if (oresRoot != null) {
+                        perRarityOreDrops = oresRoot.getConfigurationSection("per_rarity_base_ore_drops");
+                    }
+                }
+            }
+        }
+        if (perRarityOreDrops == null) perRarityOreDrops = section.createSection("per_rarity_base_ore_drops");
+        // Defaults: mirror per_rarity_base_ores for BASIC..RARE, higher tiers fall back to general base
+        perRarityBaseOreDrops.put(Rarity.BASIC, perRarityOreDrops.getDouble("BASIC", perRarityBaseOres.getOrDefault(Rarity.BASIC, perRarityBase.get(Rarity.BASIC))));
+        perRarityBaseOreDrops.put(Rarity.COMMON, perRarityOreDrops.getDouble("COMMON", perRarityBaseOres.getOrDefault(Rarity.COMMON, perRarityBase.get(Rarity.COMMON))));
+        perRarityBaseOreDrops.put(Rarity.UNCOMMON, perRarityOreDrops.getDouble("UNCOMMON", perRarityBaseOres.getOrDefault(Rarity.UNCOMMON, perRarityBase.get(Rarity.UNCOMMON))));
+        perRarityBaseOreDrops.put(Rarity.RARE, perRarityOreDrops.getDouble("RARE", perRarityBaseOres.getOrDefault(Rarity.RARE, perRarityBase.get(Rarity.RARE))));
+        perRarityBaseOreDrops.put(Rarity.EPIC, perRarityBase.get(Rarity.EPIC));
+        perRarityBaseOreDrops.put(Rarity.LEGENDARY, perRarityBase.get(Rarity.LEGENDARY));
+        perRarityBaseOreDrops.put(Rarity.MYTHIC, perRarityBase.get(Rarity.LEGENDARY));
+        // Dedicated tier for Netherite Scrap within ore drops base map; falls back to general NETHERITE_SCRAP (or EPIC)
+        double nsDefault = perRarityBase.getOrDefault(Rarity.NETHERITE_SCRAP, perRarityBase.get(Rarity.EPIC));
+        perRarityBaseOreDrops.put(Rarity.NETHERITE_SCRAP, perRarityOreDrops.getDouble("NETHERITE_SCRAP", nsDefault));
+
         // Enchantment books-specific per-rarity base (BASIC..RARE). Primary: pricing.per_rarity_base_enchantment_books
         ConfigurationSection perRarityEnchBooks = section.getConfigurationSection("per_rarity_base_enchantment_books");
         if (perRarityEnchBooks == null) {
@@ -349,6 +378,28 @@ public final class Pricing {
         rarityOverrides.clear();
         spawnerRarityOverrides.clear();
         enchantmentRarityOverrides.clear();
+        // Also honor top-level pricing.Blocks list for block rarity mapping (e.g., Overworld/Nature blocks)
+        {
+            ConfigurationSection blocksTopLevel = section.getConfigurationSection("Blocks");
+            if (blocksTopLevel != null) {
+                for (String key : blocksTopLevel.getKeys(false)) {
+                    if (key == null) continue;
+                    String materialKey = key.trim().toUpperCase(Locale.ROOT);
+                    Material mat = Material.matchMaterial(materialKey);
+                    if (mat == null) continue; // skip unknown materials
+                    String rarityStr = blocksTopLevel.getString(key);
+                    if (rarityStr == null || rarityStr.trim().isEmpty()) {
+                        // default to COMMON if unspecified
+                        rarityOverrides.put(mat, Rarity.COMMON);
+                        continue;
+                    }
+                    Rarity r = parseRarity(rarityStr);
+                    if (r != null) {
+                        rarityOverrides.put(mat, r);
+                    }
+                }
+            }
+        }
         if (overridesSection != null) {
             ConfigurationSection blocks = overridesSection.getConfigurationSection("Blocks");
             if (blocks != null) {
@@ -585,6 +636,7 @@ public final class Pricing {
         perRarityOresOut.set("EPIC", perRarityBaseOres.get(Rarity.EPIC));
         perRarityOresOut.set("LEGENDARY", perRarityBaseOres.get(Rarity.LEGENDARY));
         perRarityOresOut.set("MYTHIC", perRarityBaseOres.get(Rarity.MYTHIC));
+        perRarityOresOut.set("ANCIENT_DEBRIS", perRarityBaseOres.get(Rarity.ANCIENT_DEBRIS));
 
         // Save ingots-specific per-rarity base as well (under root and overrides for persistence)
         ConfigurationSection perRarityIngotsOut = section.getConfigurationSection("per_rarity_base_ingots");
@@ -736,8 +788,10 @@ public final class Pricing {
             Map<Rarity, Double> baseMap;
             if (isArmor(mat)) {
                 baseMap = perRarityBaseArmor;
-            } else if (isOre(mat)) {
+            } else if (isOreBlock(mat)) {
                 baseMap = perRarityBaseOres;
+            } else if (isOreDrop(mat)) {
+                baseMap = perRarityBaseOreDrops;
             } else if (isIngot(mat)) {
                 baseMap = perRarityBaseIngots;
             } else if (isSpawnEgg(mat)) {
@@ -788,6 +842,8 @@ public final class Pricing {
 
     private static Rarity parseRarity(String s) {
         String v = s.trim().toUpperCase(Locale.ROOT);
+        // Accept common aliases used in config: "base" should map to BASIC
+        if ("BASE".equals(v)) return Rarity.BASIC;
         try {
             return Rarity.valueOf(v);
         } catch (IllegalArgumentException ex) {
@@ -822,11 +878,14 @@ public final class Pricing {
         return Math.round(v * 100.0) / 100.0;
     }
 
-    private static boolean isOre(Material mat) {
+    private static boolean isOreBlock(Material mat) {
         String n = mat.name();
         if (n.endsWith("_ORE")) return true; // covers DEEPSLATE_*_ORE and standard *_ORE
+        return mat == Material.ANCIENT_DEBRIS;
+    }
+
+    private static boolean isOreDrop(Material mat) {
         switch (mat) {
-            case ANCIENT_DEBRIS:
             case COAL:
             case RAW_IRON:
             case RAW_COPPER:

@@ -92,12 +92,32 @@ public class ShopListener implements Listener {
 
         if (isMain(inv, title)) {
             int slot = e.getRawSlot();
-            // Prevent shift-clicking items from player inventory into the GUI
-            if (e.getClickedInventory() != null && !e.getClickedInventory().equals(inv)) {
-                if (e.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
+            // Handle shift-clicks (MOVE_TO_OTHER_INVENTORY) from the player's inventory
+            // Only allow routing directly into the Server Sell slot, and block all other destinations
+            if (e.getClickedInventory() != null && !e.getClickedInventory().equals(inv)
+                    && e.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
+                ItemStack stack = e.getCurrentItem();
+                if (stack == null || stack.getType() == Material.AIR) {
                     e.setCancelled(true);
                     return;
                 }
+                // Check server sell slot state
+                int serverSellSlot = 45; // ShopMenus server sell slot
+                ItemStack target = inv.getItem(serverSellSlot);
+                boolean slotAvailable = (target == null || target.getType() == Material.AIR
+                        || (target.hasItemMeta() && Constants.GUI_SERVER_SELL_PLACEHOLDER.equals(
+                        target.getItemMeta().getPersistentDataContainer().get(Constants.KEY_TYPE, PersistentDataType.STRING))));
+                if (slotAvailable) {
+                    // Move the whole stack into the server sell slot and schedule processing
+                    inv.setItem(serverSellSlot, stack.clone());
+                    e.setCurrentItem(new ItemStack(Material.AIR));
+                    e.setCancelled(true);
+                    Bukkit.getScheduler().runTask(plugin, () -> handleServerSellSlotItem(p));
+                } else {
+                    // Server sell slot not available; block shift-click into GUI
+                    e.setCancelled(true);
+                }
+                return;
             }
             // Block number-key hotbar swaps in the main GUI entirely
             if (e.getAction() == InventoryAction.HOTBAR_SWAP || e.getClick() == org.bukkit.event.inventory.ClickType.NUMBER_KEY) {

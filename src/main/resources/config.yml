@@ -8,16 +8,13 @@ listing_throttle_ms: 600
 pricing:
   # Base price per unit for each rarity. You can tweak these to change the suggested max price calculation.
   per_rarity_base_craftables:
-    BASE: 1.0         # Alias for BASIC; used by code and kept in sync automatically
-    BASIC: 5.0         # New lowest tier for very common/basic items
+    BASIC: 5.0         # Lowest tier for very common/basic items
     COMMON: 15.0
     UNCOMMON: 20.0
     RARE: 500.0
     EPIC: 2000.0
     LEGENDARY: 100000.0  # General top-tier rarity
     ELYTRA: 1300000.0     # Elytra-specific rarity (defaults to LEGENDARY value); adjust as desired
-    NETHERITE_SCRAP: 25000.0 # Dedicated rarity for Netherite Scrap; defaults to EPIC value by default
-    ANCIENT_DEBRIS: 20000.0 # Dedicated rarity for Ancient Debris; defaults to EPIC value by default
     # If you previously used the misspelled key 'LEGENDARY', it will be migrated automatically on next load.
 
 
@@ -220,12 +217,20 @@ pricing:
       PALE_OAK_CHEST_BOAT: common
 
       # Basic materials and misc
+      ENDER_PEARL: basic
+      EYE_OF_ENDER: basic
+      BLAZE_ROD: basic
+      BLAZE_POWDER: basic
+      POPPED_CHORUS_FRUIT: basic
       HONEY_BLOCK: basic
-      SLIME_BLOCK: base
-      SLIME_BALL: base
-      STRING: base
-      STICK: base
-      FEATHER: base
+      HONEYCOMB: basic
+      HONEY_BOTTLE: basic
+      SLIME_BLOCK: basic
+      SLIME_BALL: basic
+      BONE: basic
+      STRING: basic
+      STICK: basic
+      FEATHER: basic
       MAGMA_CREAM: basic
       SHULKER_SHELL: uncommon
       BOWL: basic
@@ -368,7 +373,6 @@ pricing:
       GLOW_BERRIES: basic
       GOLDEN_APPLE: rare
       GOLDEN_CARROT: common
-      HONEY_BOTTLE: basic
       MELON_SLICE: basic
       MILK_BUCKET: basic
       MUSHROOM_STEW: basic
@@ -807,7 +811,7 @@ pricing:
       BASIC: 0.10
       COMMON: 0.15
       UNCOMMON: 0.20
-      RARE: 0.25
+      RARE: 2.25
 
     # Blocks (uses pricing.per_rarity_base_blocks): natural terrain and building blocks
     Blocks:
@@ -1237,6 +1241,8 @@ pricing:
       LILAC: basic
       ROSE_BUSH: basic
       PEONY: basic
+      # Wither Rose is rarer than normal flowers since it only generates from Wither kills
+      WITHER_ROSE: rare
       GRASS: basic
       TALL_GRASS: basic
       FERN: basic
@@ -1333,6 +1339,7 @@ pricing:
       EPIC: 2000.0
       LEGENDARY: 150000.0
       MYTHIC: 300000.0
+      ANCIENT_DEBRIS: 20000.0
 
     # Ores (uses pricing.per_rarity_base_ores): ore blocks and their drops
     Ores:
@@ -1354,6 +1361,19 @@ pricing:
       DIAMOND_ORE: rare
       DEEPSLATE_DIAMOND_ORE: rare
 
+      # Nether ores
+      NETHER_QUARTZ_ORE: common
+      NETHER_GOLD_ORE: common
+      ANCIENT_DEBRIS: ANCIENT_DEBRIS
+
+      # Per-rarity base for common ore drops (uses when pricing items like COAL, RAW_IRON, REDSTONE, etc.)
+      per_rarity_base_ore_drops:
+        BASIC: 5
+        COMMON: 10
+        UNCOMMON: 15
+        RARE: 25
+        NETHERITE_SCRAP: 25000.0
+
       # Common ore drops
       COAL: basic
       RAW_IRON: common
@@ -1366,9 +1386,4 @@ pricing:
       QUARTZ: common
       AMETHYST_SHARD: uncommon
       NETHERITE_SCRAP: NETHERITE_SCRAP
-
-      # Nether ores
-      NETHER_QUARTZ_ORE: common
-      NETHER_GOLD_ORE: common
-      ANCIENT_DEBRIS: ANCIENT_DEBRIS
 
