@@ -1,14 +1,14 @@
 package me.MILLSBOSS.ecoShop.gui;
 
-import me.MILLSBOSS.ecoShop.EcoShopPro;
+import me.MILLSBOSS.ecoShop.HyperShop;
 import org.bukkit.NamespacedKey;
 
 public final class Constants {
-    public static final NamespacedKey KEY_TYPE = new NamespacedKey(EcoShopPro.getInstance(), "gui-type");
-    public static final NamespacedKey KEY_CATEGORY = new NamespacedKey(EcoShopPro.getInstance(), "category");
-    public static final NamespacedKey KEY_LISTING_ID = new NamespacedKey(EcoShopPro.getInstance(), "listing-id");
-    public static final NamespacedKey KEY_PAGE = new NamespacedKey(EcoShopPro.getInstance(), "page");
-    public static final NamespacedKey KEY_QUANTITY = new NamespacedKey(EcoShopPro.getInstance(), "quantity");
+    public static final NamespacedKey KEY_TYPE = new NamespacedKey(HyperShop.getInstance(), "gui-type");
+    public static final NamespacedKey KEY_CATEGORY = new NamespacedKey(HyperShop.getInstance(), "category");
+    public static final NamespacedKey KEY_LISTING_ID = new NamespacedKey(HyperShop.getInstance(), "listing-id");
+    public static final NamespacedKey KEY_PAGE = new NamespacedKey(HyperShop.getInstance(), "page");
+    public static final NamespacedKey KEY_QUANTITY = new NamespacedKey(HyperShop.getInstance(), "quantity");
 
     public static final String GUI_MAIN = "main";
     public static final String GUI_CATEGORY = "category";

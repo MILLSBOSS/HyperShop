@@ -43,7 +43,7 @@ public final class ShopMenus {
     private ShopMenus() {}
 
     public static void openMain(Player p) {
-        Inventory inv = Bukkit.createInventory(new ShopHolder(Constants.GUI_MAIN, null, 0), 54, ChatColor.GREEN + "EcoShopPro");
+        Inventory inv = Bukkit.createInventory(new ShopHolder(Constants.GUI_MAIN, null, 0), 54, ChatColor.GREEN + "HyperShop");
         tagInventory(inv, Constants.GUI_MAIN, null, -1);
         // Fill with categories
         int[] catSlots = new int[]{10,11,12,13,14,15,16,19,20,21,22,23};
@@ -80,7 +80,7 @@ public final class ShopMenus {
         Inventory inv = Bukkit.createInventory(new ShopHolder(Constants.GUI_CATEGORY, category, page), 54, ChatColor.YELLOW + category.getDisplay() + ChatColor.GRAY + " - Page " + (page+1));
         tagInventory(inv, Constants.GUI_CATEGORY, category, page);
         // Fetch listings and paginate
-        ListingsManager lm = EcoShopPro.getInstance().getListingsManager();
+        ListingsManager lm = HyperShop.getInstance().getListingsManager();
         List<Listing> list = lm.getByCategory(category);
         int perPage = 45; // top 5 rows
         int start = page * perPage;
@@ -100,7 +100,7 @@ public final class ShopMenus {
     public static void openMyListings(Player p, int page) {
         Inventory inv = Bukkit.createInventory(new ShopHolder(Constants.GUI_MY_LISTINGS, null, page), 54, ChatColor.AQUA + "My Listings - Page " + (page+1));
         tagInventory(inv, Constants.GUI_MY_LISTINGS, null, page);
-        ListingsManager lm = EcoShopPro.getInstance().getListingsManager();
+        ListingsManager lm = HyperShop.getInstance().getListingsManager();
         List<Listing> mine = lm.getBySeller(p.getUniqueId());
         int perPage = 45;
         int start = page * perPage;
@@ -229,9 +229,9 @@ public final class ShopMenus {
         meta.setDisplayName(ChatColor.GOLD + p.getName());
         double bal = 0.0;
         double sales = 0.0;
-        Economy eco = EcoShopPro.getInstance().getEconomy();
+        Economy eco = HyperShop.getInstance().getEconomy();
         if (eco != null) bal = eco.getBalance(p);
-        sales = EcoShopPro.getInstance().getListingsManager().getSalesTotal(p.getUniqueId());
+        sales = HyperShop.getInstance().getListingsManager().getSalesTotal(p.getUniqueId());
         meta.setLore(Arrays.asList(
                 ChatColor.YELLOW + String.format("Balance: %.2f", bal),
                 ChatColor.YELLOW + String.format("Total Sales: %.2f", sales)

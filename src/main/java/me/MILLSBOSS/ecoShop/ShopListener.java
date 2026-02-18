@@ -24,14 +24,14 @@ import java.util.*;
 
 public class ShopListener implements Listener {
 
-    private final EcoShopPro plugin;
+    private final HyperShop plugin;
 
     // pending sell: player -> item to list
     private final Map<UUID, ItemStack> pendingSell = new HashMap<>();
     // last time a player completed a listing/server-sell action, to throttle rapid uploads
     private final Map<UUID, Long> lastListingAction = new HashMap<>();
 
-    public ShopListener(EcoShopPro plugin) {
+    public ShopListener(HyperShop plugin) {
         this.plugin = plugin;
     }
 
@@ -40,7 +40,7 @@ public class ShopListener implements Listener {
             return Constants.GUI_MAIN.equals(((ShopHolder) inv.getHolder()).getType());
         }
         String t = ChatColor.stripColor(title);
-        return t.equalsIgnoreCase("EcoShopPro");
+        return t.equalsIgnoreCase("HyperShop");
     }
 
     private boolean isCategory(Inventory inv, String title) {

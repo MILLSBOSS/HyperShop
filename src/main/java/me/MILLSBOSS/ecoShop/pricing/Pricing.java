@@ -1,6 +1,6 @@
 package me.MILLSBOSS.ecoShop.pricing;
 
-import me.MILLSBOSS.ecoShop.EcoShopPro;
+import me.MILLSBOSS.ecoShop.HyperShop;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
@@ -60,7 +60,7 @@ public final class Pricing {
 
     private Pricing() {}
 
-    public static void load(EcoShopPro plugin) {
+    public static void load(HyperShop plugin) {
         // Ensure defaults
         plugin.saveDefaultConfig();
         ConfigurationSection section = plugin.getConfig().getConfigurationSection("pricing");

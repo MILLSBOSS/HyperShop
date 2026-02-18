@@ -1,4 +1,4 @@
-# EcoShopPro configuration
+# HyperShop configuration
 
 # Throttle listing-related actions to avoid triggering anticheat for rapid uploads.
 # Value is in milliseconds. Players attempting to list items faster than this interval
@@ -159,7 +159,7 @@ pricing:
       GREEN_CANDLE: basic
       RED_CANDLE: basic
       BLACK_CANDLE: basic
-      # Copper lanterns and torches (1.21.9)
+      # Copper lanterns and torches (1.21.9 - 1.21.11)
       COPPER_TORCH: common
       EXPOSED_COPPER_TORCH: common
       WEATHERED_COPPER_TORCH: common
@@ -720,7 +720,7 @@ pricing:
       WITHER: epic
       ENDER_DRAGON: epic
 
-      # 1.21 Trial chambers
+      # 1.21 Trial chambers (1.21.9 - 1.21.11)
       BREEZE: rare
       BOGGED: uncommon
 

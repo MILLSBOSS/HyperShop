@@ -5,7 +5,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 
 /**
- * Inventory holder used to reliably identify EcoShopPro GUIs.
+ * Inventory holder used to reliably identify HyperShop GUIs.
  * This prevents interference with other plugins by avoiding title-based checks.
  */
 public final class ShopHolder implements InventoryHolder {

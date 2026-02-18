@@ -1,15 +1,16 @@
-name: EcoShopPro
+name: HyperShop
 version: '1.0'
-main: me.MILLSBOSS.ecoShop.EcoShopPro
+main: me.MILLSBOSS.ecoShop.HyperShop
 api-version: '1.21'
+supported-versions: [1.21.9, 1.21.10, 1.21.11]
 softdepend:
   - Vault
 commands:
   shop:
-    description: Open the EcoShopPro
+    description: Open the HyperShop
     usage: /shop
-    permission: EcoShopPro.use
+    permission: HyperShop.use
 permissions:
-  EcoShopPro.use:
+  HyperShop.use:
     description: Allows using /shop
     default: true

@@ -10,14 +10,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public final class EcoShopPro extends JavaPlugin {
+public final class HyperShop extends JavaPlugin {
 
-    private static EcoShopPro instance;
+    private static HyperShop instance;
     private Economy economy;
     private ListingsManager listingsManager;
     private long listingThrottleMs;
 
-    public static EcoShopPro getInstance() { return instance; }
+    public static HyperShop getInstance() { return instance; }
 
     public Economy getEconomy() { return economy; }
     public ListingsManager getListingsManager() { return listingsManager; }
@@ -39,12 +39,12 @@ public final class EcoShopPro extends JavaPlugin {
         }
         // Register listeners
         Bukkit.getPluginManager().registerEvents(new ShopListener(this), this);
-        getLogger().info("EcoShopPro enabled.");
+        getLogger().info("HyperShop enabled.");
     }
 
     @Override
     public void onDisable() {
-        getLogger().info("EcoShopPro disabled.");
+        getLogger().info("HyperShop disabled.");
     }
 
     private boolean setupEconomy() {
@@ -67,7 +67,7 @@ public final class EcoShopPro extends JavaPlugin {
                 return true;
             }
             Player p = (Player) sender;
-            if (!p.hasPermission("EcoShopPro.use")) {
+            if (!p.hasPermission("HyperShop.use")) {
                 p.sendMessage("You don't have permission.");
                 return true;
             }

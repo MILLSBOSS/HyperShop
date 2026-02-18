@@ -157,7 +157,7 @@ public class ListingsManager {
     }
 
     private void saveAsync() {
-        Bukkit.getScheduler().runTaskAsynchronously(Bukkit.getPluginManager().getPlugin("EcoShopPro"), this::save);
+        Bukkit.getScheduler().runTaskAsynchronously(Bukkit.getPluginManager().getPlugin("HyperShop"), this::save);
     }
 
     private void save() {
@@ -181,7 +181,7 @@ public class ListingsManager {
     }
 
     private void saveSalesAsync() {
-        Bukkit.getScheduler().runTaskAsynchronously(Bukkit.getPluginManager().getPlugin("EcoShopPro"), this::saveSales);
+        Bukkit.getScheduler().runTaskAsynchronously(Bukkit.getPluginManager().getPlugin("HyperShop"), this::saveSales);
     }
 
     private void saveSales() {
