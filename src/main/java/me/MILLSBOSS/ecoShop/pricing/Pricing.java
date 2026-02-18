@@ -860,12 +860,12 @@ public final class Pricing {
         if (mat == Material.ANCIENT_DEBRIS) return Rarity.ANCIENT_DEBRIS; // Dedicated rarity for Ancient Debris
         String name = mat.name();
         // Very lightweight heuristic
-        if (containsAny(name, "NETHERITE", "DRAGON", "BEACON", "TOTEM")) return Rarity.EPIC;
-        if (containsAny(name, "DIAMOND", "ANCIENT_DEBRIS", "NETHER_STAR", "SPONGE", "SHULKER")) return Rarity.RARE;
-        if (containsAny(name, "GOLD", "EMERALD", "ENCHANTED", "TRIDENT", "AMETHYST")) return Rarity.UNCOMMON;
-        if (containsAny(name, "IRON", "COPPER", "LAPIS", "REDSTONE")) return Rarity.UNCOMMON;
+        if (containsAny(name, "NETHERITE", "DRAGON", "BEACON", "TOTEM", "MACE")) return Rarity.EPIC;
+        if (containsAny(name, "DIAMOND", "ANCIENT_DEBRIS", "NETHER_STAR", "SPONGE", "SHULKER", "OMINOUS_BOTTLE")) return Rarity.RARE;
+        if (containsAny(name, "GOLD", "EMERALD", "ENCHANTED", "TRIDENT", "AMETHYST", "WIND_CHARGE", "SCULK_SHRIEKER")) return Rarity.UNCOMMON;
+        if (containsAny(name, "IRON", "COPPER", "LAPIS", "REDSTONE", "CRAFTER", "SCULK_SENSOR")) return Rarity.UNCOMMON;
         // Blocks and common resources
-        if (containsAny(name, "DIRT", "STONE", "SAND", "GRAVEL", "WOOD", "PLANKS", "SAPLING", "SEEDS", "WOOL", "GLASS")) return Rarity.COMMON;
+        if (containsAny(name, "DIRT", "STONE", "SAND", "GRAVEL", "WOOD", "PLANKS", "SAPLING", "SEEDS", "WOOL", "GLASS", "LEAVES", "TUFF", "MOSS", "TORCH", "LANTERN", "END_ROD")) return Rarity.COMMON;
         return Rarity.COMMON;
     }
 
@@ -928,25 +928,10 @@ public final class Pricing {
     }
 
     private static boolean isSaplingOrSeed(Material mat) {
+        String n = mat.name();
+        if (n.contains("SAPLING") || n.contains("SEEDS") || n.contains("PROPAGULE") || n.contains("FUNGUS")) return true;
         switch (mat) {
-            case OAK_SAPLING:
-            case SPRUCE_SAPLING:
-            case BIRCH_SAPLING:
-            case JUNGLE_SAPLING:
-            case ACACIA_SAPLING:
-            case DARK_OAK_SAPLING:
-            case CHERRY_SAPLING:
-            case PALE_OAK_SAPLING:
-            case MANGROVE_PROPAGULE:
-            case CRIMSON_FUNGUS:
-            case WARPED_FUNGUS:
-            // Treat Nether Wart like seeds for pricing purposes so it uses the saplings/seeds base map
             case NETHER_WART:
-            case WHEAT_SEEDS:
-            case BEETROOT_SEEDS:
-            case PUMPKIN_SEEDS:
-            case MELON_SEEDS:
-            case TORCHFLOWER_SEEDS:
             case PITCHER_POD:
                 return true;
             default:
